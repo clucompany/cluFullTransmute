@@ -1,6 +1,6 @@
-package]
+[package]
 name = "cluFullTransmute"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Denis Kotlyarov (Денис Котляров) <denis2005991@gmail.com>"]
 repository = "https://github.com/clucompany/cluFullTransmute.git"
 edition = "2018"
