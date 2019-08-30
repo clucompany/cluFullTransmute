@@ -74,7 +74,7 @@ impl<T> B<T> {
 }
 
 fn main() {
-	let data = A(9999); //ignore drop!
+	let data = A(9999usize); //ignore drop!
 	
 	let b: B<usize> = unsafe{ full_transmute(data) };
 	assert_eq!(b.0, 9999);
