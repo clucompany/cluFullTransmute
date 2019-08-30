@@ -1,0 +1,15 @@
+[package]
+name = "cluFullTransmute"
+version = "1.0.0"
+authors = ["Denis Kotlyarov (Денис Котляров) <denis2005991@gmail.com>"]
+repository = "https://github.com/clucompany/cluConstData.git"
+edition = "2018"
+
+license = "Apache-2.0"
+readme = "README.md"
+
+description = "A more complete and advanced version of data transmutation"
+keywords = ["transmute", "unsafe_transmute", "cluFullTransmute", "no_std", "clucompany"]
+categories = ["development-tools"]
+
+[dependencies]
