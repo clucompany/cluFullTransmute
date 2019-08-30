@@ -21,7 +21,7 @@ A more complete and advanced version of data transmutation.
 1. Reduction of any A to any B, without checking the dimensionality of the data.
 2. The ability to use transmute with const functions.
 3. Possibility of delayed transmutation.
-4. The library uses #![no_std]
+4. The library uses #!\[no_std\]
 
 # A warning!
 
