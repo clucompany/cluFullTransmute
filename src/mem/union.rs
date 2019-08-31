@@ -6,6 +6,7 @@ use core::mem::ManuallyDrop;
 
 
 /// Delayed transformation wrapper.
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct TransmuteData<T, To> {
 	data: T,
