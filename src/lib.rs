@@ -1,4 +1,4 @@
-//Copyright 2019 #UlinProject Денис Котляров
+//Copyright 2019 #UlinProject Denis Kotlyarov (Денис Котляров)
 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -83,6 +83,52 @@ fn main() {
 }
 ```
 
+3. MaybeTransform
+
+```rust
+use cluFullTransmute::mem::MaybeTransmute;
+
+struct MyData {
+	data: MaybeTransmute<String, Vec<u8>>,
+}
+
+impl MyData {
+	#[inline]
+	pub fn new<I: Into<String>>(t: I) -> Self {
+		Self::__new(t.into())	
+	}
+	
+	#[inline]
+	const fn __new(t: String) -> Self {
+		Self {
+			data: MaybeTransmute::new(t),	
+		}	
+	}
+	
+	#[inline]
+	pub fn as_string(&mut self) -> &mut String {
+		&mut self.data
+	}
+	
+	#[inline]
+	pub fn into(self) -> Vec<u8> {
+		unsafe { self.data.into() }
+	}
+}
+
+
+fn main() {
+	let mut data = MyData::new("Test");
+	assert_eq!(data.as_string().as_bytes(), b"Test");
+	assert_eq!(data.as_string(), "Test");
+	
+	
+	let vec = data.into();
+	assert_eq!(vec, b"Test");
+	
+}
+```
+
 */
 
 #![feature(untagged_unions)]
@@ -98,193 +144,3 @@ pub mod mem {
 }
 
 
-
-#[cfg(test)]
-mod tests {
-	#[allow(unused_imports)]
-	use super::*;
-	
-	extern crate alloc;
-	
-	#[test]
-	fn full_transmute_correct() {
-		use core::hash::{Hash, Hasher};
-		
-		#[allow(deprecated)]
-		use core::hash::SipHasher;
-		//Why SipHasher, not DefaultHasher?
-		//
-		//DefaultHasher is only in std, we only need core.
-		
-		#[derive(Hash, Debug)]
-		struct A(usize, usize, bool);
-		
-		static mut CHECK_DROP1: bool = false;
-		impl Drop for A {
-			#[inline]
-			fn drop(&mut self) {
-				unsafe { 
-					CHECK_DROP1 = true;
-				}
-				// CHECK_DROP1 must be false, 
-				//
-				// if the destructor is executed,
-				// then everything is bad.
-			}
-		}
-		
-		#[derive(Hash, Debug)]
-		struct B(usize, usize, bool);
-		
-		static mut CHECK_DROP2: bool = false;
-		impl Drop for B {
-			fn drop(&mut self) {
-				unsafe { 
-					CHECK_DROP2 = true;
-				}
-			}
-		}
-		
-		// Why not use `#[repr (C)]`?
-		//
-		// I assume that the Rust compiler optimizes 
-		// two structures with the same attachments 
-		// the same way, and in case of an error I get a test failure.
-		
-		const ONE_DATA: usize = usize::max_value();
-		const TWO_DATA: usize = usize::min_value();
-		const THREE_DATA: bool = true;
-		
-		let a = A(ONE_DATA, TWO_DATA, THREE_DATA);
-		let a_hash = {
-			#[allow(deprecated)]
-			let mut hasher = SipHasher::new();
-			a.hash(&mut hasher);
-			hasher.finish()
-		};
-		
-		let b: B = unsafe { crate::mem::full_transmute(a) };
-		let b_hash = {
-			#[allow(deprecated)]
-			let mut hasher = SipHasher::new();
-			b.hash(&mut hasher);
-			hasher.finish()
-		};
-		
-		assert_eq!(b.0, ONE_DATA);
-		assert_eq!(b.1, TWO_DATA);
-		assert_eq!(b.2, THREE_DATA);
-		
-		assert_eq!(a_hash, b_hash);
-		
-		drop(b);
-		assert_eq!(unsafe{ CHECK_DROP1 }, false);
-		assert_eq!(unsafe{ CHECK_DROP2 }, true);
-		// We check the work of the destructor, 
-		//
-		// if the destructor does not work, 
-		// then everything is bad.
-	}
-	
-	
-	#[test]
-	fn full_transmute_correct_struct() {
-		use crate::mem::TransmuteData;
-		use core::hash::{Hash, Hasher};
-		use core::mem::ManuallyDrop;
-		use alloc::string::String;
-		
-		#[allow(deprecated)]
-		use core::hash::SipHasher;
-		//Why SipHasher, not DefaultHasher?
-		//
-		//DefaultHasher is only in std, we only need core.
-		
-		#[repr(C)]
-		#[derive(Hash)]
-		struct ShadowData {
-			u: usize,
-			str: ManuallyDrop<String>, // !!!UNK DATA!!!
-		}
-		
-		impl ShadowData {
-			fn usize_hash(&self) -> u64 {
-				#[allow(deprecated)]
-				let mut hasher = SipHasher::new();
-				Hash::hash(self, &mut hasher);
-				hasher.finish()
-			}
-		}
-		
-		static mut CHECK_DROP: bool = false;
-		impl Drop for ShadowData {
-			fn drop(&mut self) {
-				unsafe {
-					ManuallyDrop::drop(&mut self.str);
-					
-					CHECK_DROP = true;
-				}
-			}
-		}
-		
-		struct A {
-			#[allow(dead_code)]
-			data: TransmuteData<usize, ShadowData>,
-		}
-		
-		impl A {
-			fn data(self) -> TransmuteData<usize, ShadowData> {
-				let mut new_self = ManuallyDrop::new(self);
-				unsafe { 
-					ManuallyDrop::drop(&mut new_self);
-					crate::mem::full_transmute(new_self)
-				}
-				
-				// Mini hak, execute the destructor of the current structure 
-				// but at the same time pull the value out of it. 
-				//
-				// We are sure that your instructor does not use this value, so we can.
-				// We need it for the test!
-			}
-			
-			fn into(self) -> ShadowData {				
-				let mut shadow = unsafe{ self.data().into() }; //ShadowData
-				shadow.str = ManuallyDrop::new("test".into());
-					
-				shadow
-			}
-		}
-		
-		static mut CHECK_DROP2: bool = false;
-		impl Drop for A {
-			fn drop(&mut self) {
-				unsafe {
-					CHECK_DROP2 = true;
-				}
-			}
-		}
-		
-		let data = A {
-			data: 10.into(),
-		};
-		let shadow_data = data.into();
-		
-		
-		assert_eq!(
-			shadow_data.usize_hash(),
-			ShadowData {
-				u: 10,
-				str: ManuallyDrop::new("test".into()),
-			}.usize_hash()
-		);
-		drop(shadow_data);
-		
-		
-		assert_eq!(unsafe{ CHECK_DROP },  true);
-		assert_eq!(unsafe{ CHECK_DROP2 }, true);
-		// We check the work of the destructor, 
-		//
-		// if the destructor does not work, 
-		// then everything is bad.
-	}
-}
