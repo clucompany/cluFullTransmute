@@ -72,7 +72,7 @@ fn main() {
 }
 ```
 
-3. MaybeTransform
+3. MaybeTransmute
 
 ```rust
 use cluFullTransmute::mem::MaybeTransmute;
