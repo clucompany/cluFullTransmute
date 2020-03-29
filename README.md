@@ -20,7 +20,7 @@ A more complete and advanced version of data transmutation without restrictions.
 
 # Use
 
-1. GenericType
+### 1. GenericType
 
 ```rust
 use cluFullTransmute::mem::full_transmute;
@@ -49,7 +49,7 @@ fn main() {
 }
 ```
 
-2. Easy
+### 2. Easy
 
 ```rust
 use cluFullTransmute::mem::full_transmute;
@@ -70,7 +70,7 @@ fn main() {
 }
 ```
 
-3. MaybeTransmute
+### 3. MaybeTransmute
 
 ```rust
 use cluFullTransmute::mem::MaybeTransmute;
