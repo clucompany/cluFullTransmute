@@ -1,5 +1,4 @@
 
-
 use cluFullTransmute::mem::full_transmute;
 
 fn main() {

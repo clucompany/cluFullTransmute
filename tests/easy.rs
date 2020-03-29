@@ -1,12 +1,12 @@
 
-use std::hash::{Hash, Hasher};
+extern crate cluFullTransmute;
+
+use std::hash::Hasher;
+use std::hash::Hash;
 use std::collections::hash_map::DefaultHasher;
 
-
 #[test]
-fn full_transmute_correct() {
-	//A -> B
-	//A: Drop, B: !Drop
+fn easy_full_transmute_correct() {
 	
 	#[derive(Hash, Debug)]
 	struct A(usize, usize, bool);

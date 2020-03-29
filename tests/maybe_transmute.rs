@@ -58,8 +58,8 @@ fn full_transmute_correct_struct() {
 			// We need it for the test!
 		}
 		
-		fn into(self) -> UsizeStrData {				
-			let mut shadow = unsafe{ self.data().into() }; //ShadowData
+		fn into(self) -> UsizeStrData {
+			let mut shadow = unsafe { self.data().into() }; //ShadowData
 			shadow.str = ManuallyDrop::new("test".into());
 				
 			shadow
@@ -91,8 +91,8 @@ fn full_transmute_correct_struct() {
 	drop(shadow_data);
 	
 	
-	assert_eq!(unsafe{ CHECK_DROP },  true);
-	assert_eq!(unsafe{ CHECK_DROP2 }, true);
+	assert_eq!(unsafe { CHECK_DROP },  true);
+	assert_eq!(unsafe { CHECK_DROP2 }, true);
 	// We check the work of the destructor, 
 	//
 	// if the destructor does not work, 

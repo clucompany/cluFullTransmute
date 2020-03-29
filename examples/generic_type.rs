@@ -1,8 +1,6 @@
 
-
 use cluFullTransmute::mem::full_transmute;
 
-#[allow(dead_code)]
 struct A<T>(T);
 
 impl<T> Drop for A<T> {
@@ -11,7 +9,6 @@ impl<T> Drop for A<T> {
 	}
 }
 
-#[allow(dead_code)]
 struct B<T>(T);
 
 impl<T> B<T> {
@@ -21,7 +18,7 @@ impl<T> B<T> {
 fn main() {
 	let data = A(9999usize); //ignore drop!
 	
-	let b: B<usize> = unsafe{ full_transmute(data) };
+	let b: B<usize> = unsafe { full_transmute(data) };
 	assert_eq!(b.0, 9999usize);
 	
 	b.my_fn();

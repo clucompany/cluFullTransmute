@@ -1,5 +1,4 @@
 
-
 use cluFullTransmute::mem::MaybeTransmute;
 
 struct MyData {
