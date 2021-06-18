@@ -15,6 +15,12 @@ impl<T> B<T> {
 	pub fn my_fn(&self) {}
 }
 
+impl<T> Drop for B<T> {
+	fn drop(&mut self) {
+		
+	}
+}
+
 fn main() {
 	let data = A(9999usize); //ignore drop!
 	

@@ -12,9 +12,12 @@ impl MyData {
 	}
 	
 	#[inline]
-	const fn __new(t: String) -> Self {
+	const fn __new(data: String) -> Self {
+		let data = unsafe {
+			MaybeTransmute::new(data)
+		};
 		Self {
-			data: MaybeTransmute::new(t),	
+			data,	
 		}	
 	}
 	
@@ -25,7 +28,7 @@ impl MyData {
 	
 	#[inline]
 	pub fn into(self) -> Vec<u8> {
-		unsafe { self.data.into() }
+		self.data.into()
 	}
 }
 

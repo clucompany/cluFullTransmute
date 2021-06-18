@@ -1,4 +1,4 @@
-//Copyright 2019-2020 #UlinProject Denis Kotlyarov (Денис Котляров)
+//Copyright 2021 #UlinProject Denis Kotlyarov (Денис Котляров)
 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -12,8 +12,7 @@
 //See the License for the specific language governing permissions and
 // limitations under the License.
 
-//#Ulin Project 20
-//#Ulin Project 1819
+//#Ulin Project 2021
 /*!
 
 A more complete and advanced version of data transmutation without restrictions.
@@ -94,13 +93,17 @@ struct MyData {
 impl MyData {
 	#[inline]
 	pub fn new<I: Into<String>>(t: I) -> Self {
-		Self::__new(t.into())	
+		Self::__new(t.into())
 	}
 	
 	#[inline]
-	const fn __new(t: String) -> Self {
+	const fn __new(data: String) -> Self {
+		let data = unsafe {
+			MaybeTransmute::new(data)
+		};
+		
 		Self {
-			data: MaybeTransmute::new(t),	
+			data
 		}	
 	}
 	
@@ -111,7 +114,7 @@ impl MyData {
 	
 	#[inline]
 	pub fn into(self) -> Vec<u8> {
-		unsafe { self.data.into() }
+		self.data.into()
 	}
 }
 
@@ -130,7 +133,8 @@ fn main() {
 
 */
 
-#![feature(untagged_unions)]
+
+//#![feature(untagged_unions)]
 #![feature(const_fn_union)]
 
 #![allow(non_snake_case)]
@@ -139,9 +143,11 @@ fn main() {
 
 /// Methods for converting data in RAM.
 pub mod mem {
-	mod union;
-	pub use self::union::*;
+	mod full_transmute;
+	pub use self::full_transmute::*;
 	
-	mod maybe_union;
-	pub use self::maybe_union::*;
+	mod maybe_transmute;
+	pub use self::maybe_transmute::*;
 }
+
+pub use self::mem::full_transmute;

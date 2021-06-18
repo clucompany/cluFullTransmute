@@ -1,7 +1,7 @@
 
 use core::mem::ManuallyDrop;
 
-/// To transform data.
+/// Data transformation.
 pub const unsafe fn full_transmute<T, To>(t: T) -> To {
 	union UnsafeTransmute<T, To> {
 		data: ManuallyDrop<T>,
@@ -10,8 +10,8 @@ pub const unsafe fn full_transmute<T, To>(t: T) -> To {
 	
 	let to = UnsafeTransmute {
 		data: ManuallyDrop::new(t)
-	}.to_data;
+	};
 	
-	ManuallyDrop::into_inner(to)
+	ManuallyDrop::into_inner(to.to_data)
 }
 

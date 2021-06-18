@@ -1,100 +1,86 @@
 
 
+use core::mem::MaybeUninit;
 use core::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 
-
 #[test]
-fn full_transmute_correct_struct() {
+fn test_maybe_transmute_correct_struct() {
 	use cluFullTransmute::mem::MaybeTransmute;
-	
-	use core::mem::ManuallyDrop;
 	use std::string::String;
 	
 	#[repr(C)]
-	#[derive(Hash)]
-	struct UsizeStrData {
-		u: usize,
-		str: ManuallyDrop<String>, // !!!UNK DATA!!!
+	struct ShadowData {
+		count: MaybeUninit<usize>, // Always init
+		
+		is_init_str: MaybeUninit<bool>,
+		data: MaybeUninit<String>,
 	}
 	
-	impl UsizeStrData {
+	impl ShadowData {
 		fn usize_hash(&self) -> u64 {
 			let mut hasher = DefaultHasher::new();
-			Hash::hash(self, &mut hasher);
+			unsafe {
+				Hash::hash(&*self.count.as_ptr() as &usize, &mut hasher);
+			}
+			
+			let is_init_str: bool = unsafe {
+				*self.is_init_str.as_ptr()
+			};
+			Hash::hash(&is_init_str as &bool, &mut hasher);
+			
+			if is_init_str {
+				unsafe {
+					Hash::hash(&*self.data.as_ptr() as &String, &mut hasher);
+				}
+			}
+			
 			hasher.finish()
 		}
 	}
 	
-	static mut CHECK_DROP: bool = false;
-	impl Drop for UsizeStrData {
+	impl Drop for ShadowData {
 		fn drop(&mut self) {
-			unsafe {
-				ManuallyDrop::drop(&mut self.str);
-				
-				CHECK_DROP = true;
-			}
-		}
-	}
-	
-		
-	struct A {
-		#[allow(dead_code)]
-		data: MaybeTransmute<usize, UsizeStrData>,
-	}
-	
-	impl A {
-		fn data(self) -> MaybeTransmute<usize, UsizeStrData> {
-			let mut new_self = ManuallyDrop::new(self);
-			unsafe { 
-				ManuallyDrop::drop(&mut new_self);
-				cluFullTransmute::mem::full_transmute(new_self)
+			let is_init_str: bool = unsafe {
+				*self.is_init_str.as_ptr()
+			};
+			if is_init_str {
+				unsafe {
+					std::ptr::drop_in_place(self.data.as_mut_ptr());
+				}
 			}
 			
-			// Mini hak, execute the destructor of the current structure 
-			// but at the same time pull the value out of it. 
-			//
-			// We are sure that your instructor does not use this value, so we can.
-			// We need it for the test!
+			unsafe {
+				std::ptr::drop_in_place(self.is_init_str.as_mut_ptr());
+				std::ptr::drop_in_place(self.count.as_mut_ptr());
+			}
+			
+		}
+	}
+	
+	let maybe = unsafe {
+		MaybeTransmute::<_, ShadowData>::new(10)
+	};
+	let shadow_data: ShadowData = {
+		let mut a = maybe.into();
+		a.is_init_str = MaybeUninit::new(false);
+		unsafe {
+			let data: usize = *a.count.as_ptr();
+			assert_eq!(data, 10);
 		}
 		
-		fn into(self) -> UsizeStrData {
-			let mut shadow = unsafe { self.data().into() }; //ShadowData
-			shadow.str = ManuallyDrop::new("test".into());
-				
-			shadow
-		}
-	}
-	
-	static mut CHECK_DROP2: bool = false;
-	impl Drop for A {
-		fn drop(&mut self) {
-			unsafe {
-				CHECK_DROP2 = true;
-			}
-		}
-	}
-	
-	let data = A {
-		data: 10.into(),
+		a.data = MaybeUninit::new("test".into());
+		a.is_init_str = MaybeUninit::new(true);
+		
+		a
 	};
-	let shadow_data = data.into();
 	
+	let check_data2 = ShadowData {
+		count: MaybeUninit::new(10),
+		
+		is_init_str: MaybeUninit::new(true),
+		data: MaybeUninit::new("test".into()),
+	};
 	
-	assert_eq!(
-		shadow_data.usize_hash(),
-		UsizeStrData {
-			u: 10,
-			str: ManuallyDrop::new("test".into()),
-		}.usize_hash()
-	);
-	drop(shadow_data);
-	
-	
-	assert_eq!(unsafe { CHECK_DROP },  true);
-	assert_eq!(unsafe { CHECK_DROP2 }, true);
-	// We check the work of the destructor, 
-	//
-	// if the destructor does not work, 
-	// then everything is bad.
+	assert_eq!(shadow_data.usize_hash(), check_data2.usize_hash());
 }
