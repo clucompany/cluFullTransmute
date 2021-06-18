@@ -10,7 +10,7 @@ A more complete and advanced version of data transmutation without restrictions.
 1. Casting any type `A` to any type `B` without checking the dimensionality of the data.
 2. The ability to use transmutation in constant functions.
 3. Possibility of delayed transmutation.
-4. Possibility of work in #![no_std]
+4. Possibility of work in #!\[no_std\]
 
 # Attention!
 
@@ -43,7 +43,7 @@ fn main() {
 	let data = A(9999usize); //ignore drop!
 	
 	let b: B<usize> = unsafe { full_transmute(data) };
-	assert_eq!(b.0, 9999usize);
+	assert_eq!(b.0, 9999);
 	
 	b.my_fn();
 }
@@ -82,13 +82,17 @@ struct MyData {
 impl MyData {
 	#[inline]
 	pub fn new<I: Into<String>>(t: I) -> Self {
-		Self::__new(t.into())	
+		Self::__new(t.into())
 	}
 	
 	#[inline]
-	const fn __new(t: String) -> Self {
+	const fn __new(data: String) -> Self {
+		let data = unsafe {
+			MaybeTransmute::new(data)
+		};
+		
 		Self {
-			data: MaybeTransmute::new(t),	
+			data
 		}	
 	}
 	
@@ -99,7 +103,7 @@ impl MyData {
 	
 	#[inline]
 	pub fn into(self) -> Vec<u8> {
-		unsafe { self.data.into() }
+		self.data.into()
 	}
 }
 
@@ -116,8 +120,9 @@ fn main() {
 }
 ```
 
+
 # License
 
-Copyright 2019-2020 #UlinProject Denis Kotlyarov (Денис Котляров)
+Copyright 2021 #UlinProject Denis Kotlyarov (Денис Котляров)
 
 Licensed under the Apache License, Version 2.0
