@@ -25,8 +25,7 @@ A more complete and advanced version of data transmutation without restrictions.
 
 # Attention!
 
-1. This library only works in a nightly compiler.
-2. You really need to understand what you are doing.
+1. You really need to understand what you are doing.
 
 
 # Use
