@@ -135,7 +135,7 @@ fn main() {
 
 
 //#![feature(untagged_unions)]
-#![feature(const_fn_union)]
+//#![feature(const_fn_union)]
 
 #![allow(non_snake_case)]
 

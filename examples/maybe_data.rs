@@ -8,7 +8,7 @@ struct MyData {
 impl MyData {
 	#[inline]
 	pub fn new<I: Into<String>>(t: I) -> Self {
-		Self::__new(t.into())	
+		Self::__new(t.into())
 	}
 	
 	#[inline]
@@ -38,8 +38,6 @@ fn main() {
 	assert_eq!(data.as_string().as_bytes(), b"Test");
 	assert_eq!(data.as_string(), "Test");
 	
-	
 	let vec = data.into();
 	assert_eq!(vec, b"Test");
-	
 }

@@ -33,14 +33,14 @@ impl<T, To> MaybeTransmute<T, To> {
 		&mut self.data
 	}
 	
+	#[deprecated(since="1.0.5", note="please use `ignore_into` instead")]
 	#[inline]
 	pub const fn data(self) -> T {
-		/*let result = unsafe {  // IGNORE, TAKE WAIT CONST
-			ManuallyDrop::take(&mut self.data)
-		};
-		let ignore_drop = ManuallyDrop::new(self);
-		
-		result*/
+		self.ignore_into()
+	}
+	
+	#[inline]
+	pub const fn ignore_into(self) -> T {
 		let new_self = ManuallyDrop::new(self);
 		
 		let value: ManuallyDrop<T> = unsafe {
@@ -63,13 +63,6 @@ impl<T, To> MaybeTransmute<T, To> {
 	}
 }
 
-/*impl<T, To> From<T> for MaybeTransmute<T, To> {
-	#[inline(always)]
-	fn from(t: T) -> Self {
-		Self::new(t)
-	}
-}*/
-
 impl<T, To> Deref for MaybeTransmute<T, To> {
 	type Target = T;
 	
@@ -79,7 +72,6 @@ impl<T, To> Deref for MaybeTransmute<T, To> {
 	}
 }
 
-
 impl<T, To> DerefMut for MaybeTransmute<T, To> {
 	#[inline(always)]
 	fn deref_mut<'a>(&'a mut self) -> &'a mut Self::Target {
@@ -87,40 +79,11 @@ impl<T, To> DerefMut for MaybeTransmute<T, To> {
 	}
 }
 
-/*impl<T, To> Debug for MaybeTransmute<T, To> where T: Debug {
-	#[inline(always)]
-	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-		let value = self.as_data();
-		Debug::fmt(value, f)
-	}
-}*/
-
-/*impl<T, To> Clone for MaybeTransmute<T, To> where T: Clone {
-	#[inline(always)]
-	fn clone(&self) -> Self {
-		let value = Clone::clone(self.as_data());
-		value.into()
-	}
-}*/
-
-/*impl<T, To, Rhs> PartialEq<Rhs> for MaybeTransmute<T, To> where T: PartialEq<Rhs> {
-	#[inline(always)]
-	fn eq(&self, other: &Rhs) -> bool {
-		let value = self.as_data();
-		T::eq(value, other)
-	}
-	
-	#[inline(always)]
-	fn ne(&self, other: &Rhs) -> bool {
-		let value = self.as_data();
-		T::ne(value, other)
-	}
-}*/
-//
-
 impl<T, To> Drop for MaybeTransmute<T, To> {
-	#[inline]
+	#[inline(always)]
 	fn drop(&mut self) {
-		unsafe { ManuallyDrop::drop(&mut self.data) }
+		unsafe {
+			ManuallyDrop::drop(&mut self.data);
+		}
 	}
 }
