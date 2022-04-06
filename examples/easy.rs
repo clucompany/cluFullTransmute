@@ -1,11 +1,11 @@
 
-use cluFullTransmute::mem::full_transmute;
+use cluFullTransmute::mem::force_transmute;
 
 fn main() {
-	let a: bool = unsafe { full_transmute(1u8) };
+	let a: bool = unsafe { force_transmute(1u8) };
 	assert_eq!(a, true);
 	
-	let b: bool = unsafe { full_transmute(0u8) };
+	let b: bool = unsafe { force_transmute(0u8) };
 	assert_eq!(b, false);
 	
 	// Why does this work?

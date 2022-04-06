@@ -1,37 +1,20 @@
 
-use core::mem::ManuallyDrop;
+use crate::mem::force_transmute;
+use crate::mem::inline_force_transmute;
 
-/// Data transformation.
+/// Reinterprets the bits of a value of one type as another type. 
+/// The function is completely const, data dimensions are not checked.
+#[doc(hidden)]
+#[deprecated(since="1.0.6", note="please use `crate::transmute::force_transmute` instead")]
 pub const unsafe fn full_transmute<D, To>(in_data: D) -> To {
-	union UnsafeTransmute<D, To> {
-		data: ManuallyDrop<D>,
-		to_data: ManuallyDrop<To>,
-		
-		#[allow(dead_code)]
-		_shadow_null: (), // It's necessary?
-	}
-	
-	let wait_transmute_data = UnsafeTransmute {
-		data: ManuallyDrop::new(in_data)
-	};
-	
-	ManuallyDrop::into_inner(wait_transmute_data.to_data)
+	force_transmute(in_data)
 }
 
-/// Data transformation.
+/// Reinterprets the bits of a value of one type as another type. 
+/// The function is completely const, data dimensions are not checked.
+#[doc(hidden)]
+#[deprecated(since="1.0.6", note="please use `crate::mem::inline_force_transmute` instead")]
 #[inline(always)]
 pub const unsafe fn inline_full_transmute<D, To>(in_data: D) -> To {
-	union UnsafeTransmute<D, To> {
-		data: ManuallyDrop<D>,
-		to_data: ManuallyDrop<To>,
-		
-		#[allow(dead_code)]
-		_shadow_null: (), // It's necessary?
-	}
-	
-	let wait_transmute_data = UnsafeTransmute {
-		data: ManuallyDrop::new(in_data)
-	};
-	
-	ManuallyDrop::into_inner(wait_transmute_data.to_data)
+	inline_force_transmute(in_data)
 }
