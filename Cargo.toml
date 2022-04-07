@@ -9,7 +9,7 @@ license = "Apache-2.0"
 readme = "README.md"
 
 description = "A more complete and advanced version of data transmutation without restrictions."
-keywords = ["transmute", "unsafe_transmute", "const_transmute", "cluFullTransmute", "no_std", "clucompany"]
+keywords = ["transmute", "unsafe_transmute", "cluFullTransmute", "no_std", "clucompany"]
 categories = ["development-tools"]
 
 [dependencies]

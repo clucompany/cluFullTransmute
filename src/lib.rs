@@ -166,16 +166,12 @@ pub mod mem {
 	/// Data Transformation Contract.
 	pub mod contract;
 	
-	/// Reinterprets the bits of a value of one type as another type. 
-	/// The function is completely const, data dimensions are not checked.
-	pub use transmute::force_transmute as transmute;
-	
-	/// Reinterprets the bits of a value of one type as another type. 
-	/// The function is completely const, data dimensions are not checked.
+	/*
+		Left only for compatibility with std.
+	*/
+	pub use transmute::check_sizedata_transmute as transmute;
+	pub use transmute::check_sizedata_transmute;
 	pub use transmute::force_transmute;
-	
-	/// Reinterprets the bits of a value of one type as another type. 
-	/// The function is completely const, data dimensions are not checked.
 	pub use transmute::inline_force_transmute as inline_force_transmute;
 }
 
@@ -184,3 +180,10 @@ pub mod mem {
 #[deprecated(since="1.0.6", note="please use `force_transmute` instead")]
 #[doc(hidden)]
 pub use self::mem::full_transmute;
+
+/*
+	Left for ease of use only.
+*/
+pub use self::mem::transmute::force_transmute;
+pub use self::mem::transmute::check_sizedata_transmute;
+pub use self::mem::transmute::check_sizedata_transmute as transmute;

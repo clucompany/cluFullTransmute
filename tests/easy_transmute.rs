@@ -55,7 +55,7 @@ fn full_transmute_correct() {
 	};
 	
 	let b: B = unsafe {
-		cluFullTransmute::mem::full_transmute(a)
+		cluFullTransmute::mem::force_transmute(a)
 	};
 	let b_hash = {
 		let mut hasher = DefaultHasher::new();

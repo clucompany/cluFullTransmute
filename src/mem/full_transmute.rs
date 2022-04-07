@@ -1,6 +1,6 @@
 
-use crate::mem::force_transmute;
-use crate::mem::inline_force_transmute;
+use crate::mem::transmute::inline_force_transmute;
+use crate::force_transmute;
 
 /// Reinterprets the bits of a value of one type as another type. 
 /// The function is completely const, data dimensions are not checked.

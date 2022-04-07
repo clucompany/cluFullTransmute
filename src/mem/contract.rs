@@ -1,4 +1,5 @@
 
+use crate::mem::transmute::inline_force_transmute;
 use core::hash::Hash;
 use core::marker::PhantomData;
 use core::fmt::Debug;
@@ -160,7 +161,7 @@ impl<T, To> DataTransmutContract<T, To> {
 		let data_ptr: &'a T = self.as_data();
 		
 		unsafe {
-			let new_data_ptr: &'a To = crate::mem::inline_force_transmute(data_ptr);
+			let new_data_ptr: &'a To = inline_force_transmute(data_ptr);
 			new_data_ptr
 		}
 	}
@@ -184,7 +185,7 @@ impl<T, To> DataTransmutContract<T, To> {
 		// To implement permanent movement, follow these steps:
 		let sself: Self = self;
 		let data: T = unsafe {
-			crate::mem::inline_force_transmute(sself)
+			inline_force_transmute(sself)
 		};
 		
 		// This is allowed because we have repr transparent.
@@ -198,7 +199,7 @@ impl<T, To> DataTransmutContract<T, To> {
 		let data: T = self.ignore_into();
 		
 		unsafe {
-			let result: To = crate::mem::inline_force_transmute(data);
+			let result: To = inline_force_transmute(data);
 			result
 		}
 	}
