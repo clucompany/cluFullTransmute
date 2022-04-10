@@ -1,7 +1,8 @@
 # cluFullTransmute
+[![CI](https://github.com/clucompany/cluFullTransmute/actions/workflows/CI.yml/badge.svg?event=push)](https://github.com/clucompany/cluFullTransmute/actions/workflows/CI.yml)
 [![Build Status](https://travis-ci.org/clucompany/cluFullTransmute.svg?branch=master)](https://travis-ci.org/clucompany/cluFullTransmute)
 [![Apache licensed](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
-[![crates.io](http://meritbadge.herokuapp.com/cluFullTransmute)](https://crates.io/crates/cluFullTransmute)
+[![crates.io](https://img.shields.io/crates/v/cluFullTransmute)](https://crates.io/crates/cluFullTransmute)
 [![Documentation](https://docs.rs/cluFullTransmute/badge.svg)](https://docs.rs/cluFullTransmute)
 
 A more complete and extended version of data type conversion without constraint checks.
