@@ -18,6 +18,7 @@ A more complete and extended version of data type conversion without constraint 
 # !!! ATTENTION !!!
 
 1. When converting types without checking the size of the data, you really need to understand what you are doing.
+2. You must understand the specifics of the platform you are using.
 
 
 
@@ -26,6 +27,9 @@ A more complete and extended version of data type conversion without constraint 
 ### 1. GenericType
 
 ```rust
+
+use cluFullTransmute::mem::force_transmute;
+
 /*
 	This example is notable because by the Rust standard it does not allow 
 	converting common types A to B, since it cannot check their sizes, 
@@ -34,9 +38,9 @@ A more complete and extended version of data type conversion without constraint 
 	Additionally, as an example, we manipulate the Drop::drop function.
 */
 
-use cluFullTransmute::mem::force_transmute;
-
+#[repr(transparent)]
 struct A<T>(T);
+#[repr(transparent)]
 struct B<T>(T);
 
 impl<T> Drop for A<T> {
@@ -56,9 +60,8 @@ impl<T> Drop for B<T> {
 }
 
 fn main() {
-	let data = A(9999usize); // We expect panic at the death of A.
-	
-	let b: B<usize> = unsafe { force_transmute(data) }; // type A no longer exists, it is now type B.
+	let a: A<usize> = A(9999usize); // We expect panic at the death of A.
+	let b: B<usize> = unsafe { force_transmute(a) }; // type A no longer exists, it is now type B.
 	
 	assert_eq!(b.0, 9999usize); // Checking the value
 	b.my_fn();
@@ -71,6 +74,7 @@ fn main() {
 ### 2. DataTransmutContract
 
 ```rust
+
 use cluFullTransmute::mem::contract::DataTransmutContract;
 
 /*
@@ -83,17 +87,12 @@ use cluFullTransmute::mem::contract::DataTransmutContract;
 
 /// 
 struct MyData {
-	data: DataTransmutContract<String, Vec<u8>>,
+	data: DataTransmutContract<&'static str, &'static [u8]>,
 }
 
 impl MyData {
 	#[inline]
-	pub fn new<I: Into<String>>(t: I) -> Self {
-		Self::__new(t.into())
-	}
-	
-	#[inline]
-	const fn __new(data: String) -> Self {
+	const fn new(data: &'static str) -> Self {
 		let data = unsafe {
 			// DataTransmutContract::force_new
 			// 
@@ -112,26 +111,34 @@ impl MyData {
 	}
 	
 	#[inline]
-	pub fn as_string(&mut self) -> &mut String {
-		&mut self.data
+	pub fn as_data(&self) -> &'static str {
+		&self.data
 	}
 	
 	#[inline]
-	pub fn into(self) -> Vec<u8> {
+	pub fn as_sliceu8(&self) -> &'static [u8] {
+		self.data.as_datato()
+	}
+	
+	#[inline]
+	pub fn into(self) -> &'static [u8] {
 		self.data.into()
 	}
 }
 
 
 fn main() {
-	// String
-	let mut data = MyData::new("Test");
-	assert_eq!(data.as_string().as_bytes(), b"Test");
-	assert_eq!(data.as_string(), "Test");
+	const C_DATA: &'static str = "Test";
+	
+	// &'static str
+	let data = MyData::new(C_DATA);
+	assert_eq!(data.as_data(), C_DATA); // const_readtype: &'static str
+	assert_eq!(data.as_sliceu8(), C_DATA.as_bytes()); //const_readtype &'static [u8]
 	//
 	
-	let vec = data.into(); // String -> Vec<u8>
-	assert_eq!(vec, b"Test");
+	// &'static u8
+	let vec = data.into(); // const_transmute: &'static str -> &'static [u8]
+	assert_eq!(vec, C_DATA.as_bytes());
 }
 ```
 

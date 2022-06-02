@@ -6,11 +6,9 @@ use core::fmt::Debug;
 use core::ops::DerefMut;
 use core::ops::Deref;
 
-/// Data Transformation Contract.
-//pub type DataTransmutContract<T, To> = DataTransmutContract<T, To>;
-
-/// Data Transformation Contract.
-//#[derive(/*Copy, *)]
+/// A contract for converting or reading data of related types. 
+/// Creating such a contract is not safe because only the creator of 
+/// the contract can guarantee that the converted type will match.
 #[repr(transparent)]
 pub struct DataTransmutContract<T, To> {
 	data: T,
@@ -97,17 +95,11 @@ impl<T, To> Hash for DataTransmutContract<T, To> where T: Hash {
 
 /// Possible mistakes DataTransmutContract
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DataTransmutContractErr {
-	InvalidSizeData(usize, usize)
+pub enum DataTransmutContractErr<T> {
+	InvalidSizeData(T, usize, usize)
 }
 
 impl<T, To> DataTransmutContract<T, To> {
-	#[deprecated(since="1.0.6", note="please use `DataTransmutContract::force_new` instead")]
-	#[inline]
-	pub const unsafe fn new(data: T) -> Self {
-		Self::force_new(data)
-	}
-	
 	/// Create a contract without checks.
 	#[inline]
 	pub const unsafe fn force_new(data: T) -> Self {
@@ -119,15 +111,17 @@ impl<T, To> DataTransmutContract<T, To> {
 	
 	/// Create a contract, but only check the data sizes.
 	#[inline]
-	pub /*const*/ unsafe fn checksize_new(data: T) -> Result<Self, DataTransmutContractErr> {
+	pub const unsafe fn checksize_new(data: T) -> Result<Self, DataTransmutContractErr<T>> {
 		if core::mem::size_of::<T>() != core::mem::size_of::<To>() {
 			return Err(DataTransmutContractErr::InvalidSizeData(
+				data,
 				core::mem::size_of::<T>(),
 				core::mem::size_of::<To>()
 			));
 		}
 		
-		Ok(Self::force_new(data))
+		let sself = Self::force_new(data);
+		Ok(sself)
 	}
 	
 	/// Create a contract, but just check the data sizes. 
@@ -151,13 +145,13 @@ impl<T, To> DataTransmutContract<T, To> {
 	
 	/// Get a link to the data.
 	#[inline(always)]
-	pub fn as_data<'a>(&'a self) -> &'a T {
+	pub const fn as_data<'a>(&'a self) -> &'a T {
 		&self.data
 	}
 	
-	/// Fast data type change to what the pointer points to
+	/// Getting a pseudo-pointer to the converted value without substitution.
 	#[inline]
-	pub fn as_datato<'a>(&'a self) -> &'a To {
+	pub const fn as_datato<'a>(&'a self) -> &'a To {
 		let data_ptr: &'a T = self.as_data();
 		
 		unsafe {
@@ -166,17 +160,21 @@ impl<T, To> DataTransmutContract<T, To> {
 		}
 	}
 	
+	/// Getting a mutable pseudo-pointer to the converted value without substitution.
+	#[inline]
+	pub fn as_mut_datato<'a>(&'a mut self) -> &'a mut To {
+		let data_ptr: &'a mut T = self.as_mut_data();
+		
+		unsafe {
+			let new_data_ptr: &'a mut To = inline_force_transmute(data_ptr);
+			new_data_ptr
+		}
+	}
+	
 	/// Get a link to the mutable data.
 	#[inline(always)]
 	pub fn as_mut_data<'a>(&'a mut self) -> &'a mut T {
 		&mut self.data
-	}
-	
-	#[doc(hidden)]
-	#[deprecated(since="1.0.5", note="please use `ignore_into` instead")]
-	#[inline]
-	pub const fn data(self) -> T {
-		self.ignore_into()
 	}
 	
 	/// Ignoring the contract, the requirement to return the data back.

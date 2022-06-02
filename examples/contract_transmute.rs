@@ -1,5 +1,4 @@
 
-
 use cluFullTransmute::mem::contract::DataTransmutContract;
 
 /*
@@ -12,17 +11,12 @@ use cluFullTransmute::mem::contract::DataTransmutContract;
 
 /// 
 struct MyData {
-	data: DataTransmutContract<String, Vec<u8>>,
+	data: DataTransmutContract<&'static str, &'static [u8]>,
 }
 
 impl MyData {
 	#[inline]
-	pub fn new<I: Into<String>>(t: I) -> Self {
-		Self::__new(t.into())
-	}
-	
-	#[inline]
-	const fn __new(data: String) -> Self {
+	const fn new(data: &'static str) -> Self {
 		let data = unsafe {
 			// DataTransmutContract::force_new
 			// 
@@ -41,24 +35,32 @@ impl MyData {
 	}
 	
 	#[inline]
-	pub fn as_string(&mut self) -> &mut String {
-		&mut self.data
+	pub fn as_data(&self) -> &'static str {
+		&self.data
 	}
 	
 	#[inline]
-	pub fn into(self) -> Vec<u8> {
+	pub fn as_sliceu8(&self) -> &'static [u8] {
+		self.data.as_datato()
+	}
+	
+	#[inline]
+	pub fn into(self) -> &'static [u8] {
 		self.data.into()
 	}
 }
 
 
 fn main() {
-	// String
-	let mut data = MyData::new("Test");
-	assert_eq!(data.as_string().as_bytes(), b"Test");
-	assert_eq!(data.as_string(), "Test");
+	const C_DATA: &'static str = "Test";
+	
+	// &'static str
+	let data = MyData::new(C_DATA);
+	assert_eq!(data.as_data(), C_DATA); // const_readtype: &'static str
+	assert_eq!(data.as_sliceu8(), C_DATA.as_bytes()); //const_readtype &'static [u8]
 	//
 	
-	let vec = data.into(); // String -> Vec<u8>
-	assert_eq!(vec, b"Test");
+	// &'static u8
+	let vec = data.into(); // const_transmute: &'static str -> &'static [u8]
+	assert_eq!(vec, C_DATA.as_bytes());
 }
