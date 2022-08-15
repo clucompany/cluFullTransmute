@@ -1,17 +1,42 @@
 
-use cluFullTransmute::mem::force_transmute;
+use core::fmt::Display;
+use cluFullTransmute::transmute::transmute_or_panic;
+
+/// Implementation of a simple transmutation with a generic parameter inside.
+
+#[derive(Debug)]
+#[repr(transparent)]
+struct A<T> {
+	#[allow(dead_code)]
+	data: T
+}
+
+impl<T> Drop for A<T> {
+	fn drop(&mut self) {
+		panic!("Invalid beh");
+	}
+}
+
+#[derive(Debug)]
+#[repr(transparent)]
+struct B<T> where T: Display {
+	data: T,
+}
+
+impl<T> Drop for B<T> where T: Display {
+	fn drop(&mut self) {
+		println!("{}", self.data);
+	}
+}
 
 fn main() {
-	let a: bool = unsafe { force_transmute(1u8) };
-	assert_eq!(a, true);
+	let a: A<u16> = A { // original and panic when falling
+		data: 1024
+	};
+	println!("in: {:?}", a);
 	
-	let b: bool = unsafe { force_transmute(0u8) };
-	assert_eq!(b, false);
+	let b: B<u16> = unsafe { transmute_or_panic(a) };
+	println!("out: {:?}", b);
 	
-	// Why does this work?
-	//
-	// Is bool one bit?
-	// No, bool is not one bit, but u8.
-	//
-	assert_eq!(std::mem::size_of::<bool>(), 1);
+	drop(b); // <--- println!
 }

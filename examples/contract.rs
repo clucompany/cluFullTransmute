@@ -1,5 +1,5 @@
 
-use cluFullTransmute::mem::contract::DataTransmutContract;
+use cluFullTransmute::contract::Contract;
 
 /*
 	For example, we will sign a contract to convert a String to a Vec<u8>, 
@@ -11,14 +11,14 @@ use cluFullTransmute::mem::contract::DataTransmutContract;
 
 /// 
 struct MyData {
-	data: DataTransmutContract<&'static str, &'static [u8]>,
+	data: Contract<&'static str, &'static [u8]>,
 }
 
 impl MyData {
 	#[inline]
 	const fn new(data: &'static str) -> Self {
 		let data = unsafe {
-			// DataTransmutContract::force_new
+			// Contract::force_new
 			// 
 			
 			// The `checksize_new_or_panic` function can only guarantee equality of data 
@@ -27,7 +27,7 @@ impl MyData {
 			// transmutation contract, all functions for working with the transmuted are 
 			// not marked as unsafe.
 			//
-			DataTransmutContract::checksize_new_or_panic(data)
+			Contract::checksize_new_or_panic(data)
 		};
 		Self {
 			data,

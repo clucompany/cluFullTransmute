@@ -9,11 +9,10 @@ A more complete and extended version of data type conversion without constraint 
 
 # Library Features
 
-1. Casting any type A to any type B without checking the dimension of the data.
-2. Ability to use transmutation in constant functions.
+1. Casting any type A to any type B with generic data without and with data dimension checking.
+2. Ability to use transmutation in constant functions in very old versions of rust.
 3. Possibility of delayed transmutation through contracts.
-4. Ability to work without the standard library
-5. Extended support for rust versions, this library was originally designed to support permanent transmutation in circumstances where this cannot be done.
+4. Ability to work without the standard library.
 
 # !!! ATTENTION !!!
 
@@ -21,61 +20,58 @@ A more complete and extended version of data type conversion without constraint 
 2. You must understand the specifics of the platform you are using.
 
 
-
 # Use
 
 ### 1. GenericType
 
 ```rust
+use core::fmt::Display;
+use cluFullTransmute::transmute::transmute_or_panic;
 
-use cluFullTransmute::mem::force_transmute;
+/// Implementation of a simple transmutation with a generic parameter inside.
 
-/*
-	This example is notable because by the Rust standard it does not allow 
-	converting common types A to B, since it cannot check their sizes, 
-	this example solves this.
-	
-	Additionally, as an example, we manipulate the Drop::drop function.
-*/
-
+#[derive(Debug)]
 #[repr(transparent)]
-struct A<T>(T);
-#[repr(transparent)]
-struct B<T>(T);
+struct A<T> {
+	#[allow(dead_code)]
+	data: T
+}
 
 impl<T> Drop for A<T> {
 	fn drop(&mut self) {
-		panic!("Strange behavior of the internal library.");
+		panic!("Invalid beh");
 	}
 }
 
-impl<T> B<T> {
-	pub fn my_fn(&self) {}
+#[derive(Debug)]
+#[repr(transparent)]
+struct B<T> where T: Display {
+	data: T,
 }
 
-impl<T> Drop for B<T> {
+impl<T> Drop for B<T> where T: Display {
 	fn drop(&mut self) {
-		
+		println!("{}", self.data);
 	}
 }
 
 fn main() {
-	let a: A<usize> = A(9999usize); // We expect panic at the death of A.
-	let b: B<usize> = unsafe { force_transmute(a) }; // type A no longer exists, it is now type B.
+	let a: A<u16> = A { // original and panic when falling
+		data: 1024
+	};
+	println!("in: {:?}", a);
 	
-	assert_eq!(b.0, 9999usize); // Checking the value
-	b.my_fn();
+	let b: B<u16> = unsafe { transmute_or_panic(a) };
+	println!("out: {:?}", b);
 	
-	drop(b);
-	// That's it, no panic, type B.
+	drop(b); // <--- println!
 }
 ```
 
-### 2. DataTransmutContract
+### 2. Contract
 
 ```rust
-
-use cluFullTransmute::mem::contract::DataTransmutContract;
+use cluFullTransmute::contract::Contract;
 
 /*
 	For example, we will sign a contract to convert a String to a Vec<u8>, 
@@ -87,14 +83,14 @@ use cluFullTransmute::mem::contract::DataTransmutContract;
 
 /// 
 struct MyData {
-	data: DataTransmutContract<&'static str, &'static [u8]>,
+	data: Contract<&'static str, &'static [u8]>,
 }
 
 impl MyData {
 	#[inline]
 	const fn new(data: &'static str) -> Self {
 		let data = unsafe {
-			// DataTransmutContract::force_new
+			// Contract::force_new
 			// 
 			
 			// The `checksize_new_or_panic` function can only guarantee equality of data 
@@ -103,7 +99,7 @@ impl MyData {
 			// transmutation contract, all functions for working with the transmuted are 
 			// not marked as unsafe.
 			//
-			DataTransmutContract::checksize_new_or_panic(data)
+			Contract::checksize_new_or_panic(data)
 		};
 		Self {
 			data,

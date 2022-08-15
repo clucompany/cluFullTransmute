@@ -1,6 +1,6 @@
 [package]
 name = "cluFullTransmute"
-version = "1.1.0"
+version = "1.2.0"
 authors = ["Denis Kotlyarov (Денис Котляров) <denis2005991@gmail.com>"]
 repository = "https://github.com/clucompany/cluFullTransmute.git"
 edition = "2021"
@@ -8,8 +8,21 @@ edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
 
-description = "A more complete and advanced version of data transmutation without restrictions."
+description = "A more complete and extended version of data transformation with and without constraint checking."
 keywords = ["transmute", "unsafe_transmute", "cluFullTransmute", "no_std", "clucompany"]
-categories = ["development-tools"]
+categories = ["development-tools", "memory-management"]
+
+# docs.rs-specific configuration
+[package.metadata.docs.rs]
+# document all features
+all-features = true
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = ["contract", "compatible_stdapi", "support_size_check_transmute"]
+contract = []
+compatible_stdapi = []
+support_size_check_transmute = []
 
 [dependencies]

@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 
 #[test]
 fn test_maybe_transmute_correct_struct() {
-	use cluFullTransmute::mem::contract::DataTransmutContract;
+	use cluFullTransmute::contract::Contract;
 	use std::string::String;
 	
 	#[repr(C)]
@@ -63,7 +63,7 @@ fn test_maybe_transmute_correct_struct() {
 		// The test is dirty, we essentially cut the structure.
 		// ----------------------------------------------------
 		// ignore checksize_new.
-		DataTransmutContract::<_, ShadowData>::force_new(10usize)
+		Contract::<_, ShadowData>::force_new(10usize)
 	};
 	let shadow_data: ShadowData = {
 		let mut a = maybe.into();
