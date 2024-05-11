@@ -2,7 +2,7 @@
 use core::fmt::Display;
 use cluFullTransmute::transmute_or_panic;
 
-/// Implementation of a simple transmutation with a generic parameter inside.
+// Implementation of a simple transmutation with a generic parameter inside.
 
 #[derive(Debug)]
 #[repr(transparent)]

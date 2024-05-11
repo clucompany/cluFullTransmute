@@ -1,6 +1,4 @@
 
-extern crate cluFullTransmute;
-
 use std::hash::Hasher;
 use std::hash::Hash;
 use std::collections::hash_map::DefaultHasher;
