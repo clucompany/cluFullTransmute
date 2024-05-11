@@ -18,16 +18,16 @@ impl MyData {
 	#[inline]
 	const fn new(data: &'static str) -> Self {
 		let data = unsafe {
-			// Contract::force_new
+			// Contract::new_checksize_or_panic
 			// 
 			
-			// The `checksize_new_or_panic` function can only guarantee equality of data 
+			// The `new_checksize_or_panic` function can only guarantee equality of data 
 			// dimensions, creating a contract is always unsafe, since the transmutation 
 			// of such data types can only be proven orally. But after signing the 
 			// transmutation contract, all functions for working with the transmuted are 
 			// not marked as unsafe.
 			//
-			Contract::checksize_new_or_panic(data)
+			Contract::new_checksize_or_panic(data)
 		};
 		Self {
 			data,
@@ -52,7 +52,7 @@ impl MyData {
 
 
 fn main() {
-	const C_DATA: &'static str = "Test";
+	const C_DATA: &str = "Test";
 	
 	// &'static str
 	let data = MyData::new(C_DATA);

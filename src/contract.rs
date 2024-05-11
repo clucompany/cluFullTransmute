@@ -1,12 +1,17 @@
 
 //! Data Transformation Contract.
 
-use crate::raw_transmute::inline_unchecked_transmute;
+use crate::mem::unchecked_transmute;
+use crate::TransmuteErrKind;
+use crate::TransmuteErr;
+use core::mem::size_of;
+use core::cmp::Ordering;
 use core::hash::Hash;
 use core::marker::PhantomData;
 use core::fmt::Debug;
 use core::ops::DerefMut;
 use core::ops::Deref;
+use core::fmt::Formatter;
 
 /// A contract for converting or reading data of related types. 
 /// Creating such a contract is not safe because only the creator of 
@@ -14,6 +19,7 @@ use core::ops::Deref;
 #[repr(transparent)]
 pub struct Contract<T, To> {
 	data: T,
+	
 	_pp: PhantomData<To>,
 }
 
@@ -23,14 +29,14 @@ impl<T, To> Clone for Contract<T, To> where T: Clone {
 		let new_data = Clone::clone(&self.data);
 		
 		unsafe {
-			Self::force_new(new_data)
+			Self::new_unchecked(new_data)
 		}
 	}
 }
 
 impl<T, To> Debug for Contract<T, To> where T: Debug {
 	#[inline(always)]
-	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
 		Debug::fmt(&self.data, f)
 	}
 }
@@ -41,6 +47,9 @@ impl<T, To> PartialEq for Contract<T, To> where T: PartialEq {
 		PartialEq::eq(&self.data, other)
 	}
 	
+	// I allow it because we are not making our own implementation, 
+	// but only redirecting trait functions to original ones.
+	#[allow(clippy::partialeq_ne_impl)]
 	#[inline(always)]
 	fn ne(&self, other: &Self) -> bool {
 		PartialEq::ne(&self.data, other)
@@ -49,7 +58,7 @@ impl<T, To> PartialEq for Contract<T, To> where T: PartialEq {
 
 impl<T, To> PartialOrd for Contract<T, To> where T: PartialOrd {
 	#[inline(always)]
-	fn partial_cmp(&self, o: &Self) -> core::option::Option<core::cmp::Ordering> {
+	fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
 		PartialOrd::partial_cmp(&self.data, o)
 	}
 	
@@ -95,60 +104,81 @@ impl<T, To> Hash for Contract<T, To> where T: Hash {
 	}
 }
 
-/// Possible mistakes Contract
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ContractErr<T> {
-	InvalidSizeData(T, usize, usize)
-}
-
 impl<T, To> Contract<T, To> {
 	/// Create a contract without checks.
-	#[inline]
-	pub const unsafe fn force_new(data: T) -> Self {
+	///
+	/// # Safety
+	///
+	/// This function does not check that the provided data is valid for this contract.
+	/// It is up to the caller to ensure that the data meets the requirements of the contract.
+	#[inline(always)]
+	pub const unsafe fn new_unchecked(data: T) -> Self {
 		Self {
 			data,
 			_pp: PhantomData,
 		}
 	}
 	
-	/// Create a contract, but only check the data sizes.
+	// Create a contract, but only check the data sizes.
+	///
+	/// # Safety
+	///
+	/// This function only checks that the provided data has the correct size for this contract.
+	/// It does not check that the data is valid for this contract.
+	/// It is up to the caller to ensure that the data meets the requirements of the contract.
 	#[inline]
-	pub const unsafe fn checksize_new(data: T) -> Result<Self, ContractErr<T>> {
-		if core::mem::size_of::<T>() != core::mem::size_of::<To>() {
-			return Err(ContractErr::InvalidSizeData(
-				data,
-				core::mem::size_of::<T>(),
-				core::mem::size_of::<To>()
-			));
+	pub const unsafe fn new_checksize(in_data: T) -> Result<Self, TransmuteErr<T>> {
+		{ // #1: Data dimension check
+			let size_d = size_of::<T>();
+			let size_to = size_of::<To>();
+			
+			if size_d != size_to {
+				let err = TransmuteErr::new_invalid_sizecheck(size_d, size_to,
+					in_data,
+				);
+				
+				return Err(err);
+			}
 		}
 		
-		let sself = Self::force_new(data);
+		let sself = Self::new_unchecked(in_data);
 		Ok(sself)
 	}
 	
-	/// Create a contract, but just check the data sizes. 
+	/// Create a contract, but check the data sizes.
 	/// In case of a dimension mismatch, throw a panic.
+	///
+	/// # Safety
+	///
+	/// This function only checks that the provided data has the correct size for this contract.
+	/// It does not check that the data is valid for this contract.
+	/// It is up to the caller to ensure that the data meets the requirements of the contract.
 	#[inline]
-	pub const unsafe fn checksize_new_or_panic(data: T) -> Self {
-		if core::mem::size_of::<T>() != core::mem::size_of::<To>() {
-			panic!(
-				concat!(
-					"Error using `checksize_new_or_panic`, size of type `",
-					stringify!(T),
-					"` is not equal to size of type `",
-					stringify!(D),
-					"`."
-				)
-			);
+	pub const unsafe fn new_checksize_or_panic(data: T) -> Self {
+		{ // #1: Data dimension check
+			let size_d = size_of::<T>();
+			let size_to = size_of::<To>();
+			
+			if size_d != size_to {
+				let errkind = TransmuteErrKind::new_invalid_sizecheck(size_d, size_to);
+				
+				errkind.unwrap();
+			}
 		}
 		
-		Self::force_new(data)
+		Self::new_unchecked(data)
 	}
 	
 	/// Get a link to the data.
 	#[inline(always)]
-	pub const fn as_data<'a>(&'a self) -> &'a T {
+	pub const fn as_data(&self) -> &T {
 		&self.data
+	}
+	
+	/// Get a link to the mutable data.
+	#[inline(always)]
+	pub fn as_mut_data(&mut self) -> &mut T {
+		&mut self.data
 	}
 	
 	/// Getting a pseudo-pointer to the converted value without substitution.
@@ -157,7 +187,8 @@ impl<T, To> Contract<T, To> {
 		let data_ptr: &'a T = self.as_data();
 		
 		unsafe {
-			let new_data_ptr: &'a To = inline_unchecked_transmute(data_ptr);
+			let new_data_ptr: &'a To = unchecked_transmute(data_ptr);
+			
 			new_data_ptr
 		}
 	}
@@ -168,15 +199,10 @@ impl<T, To> Contract<T, To> {
 		let data_ptr: &'a mut T = self.as_mut_data();
 		
 		unsafe {
-			let new_data_ptr: &'a mut To = inline_unchecked_transmute(data_ptr);
+			let new_data_ptr: &'a mut To = unchecked_transmute(data_ptr);
+			
 			new_data_ptr
 		}
-	}
-	
-	/// Get a link to the mutable data.
-	#[inline(always)]
-	pub fn as_mut_data<'a>(&'a mut self) -> &'a mut T {
-		&mut self.data
 	}
 	
 	/// Ignoring the contract, the requirement to return the data back.
@@ -185,7 +211,7 @@ impl<T, To> Contract<T, To> {
 		// To implement permanent movement, follow these steps:
 		let sself: Self = self;
 		let data: T = unsafe {
-			inline_unchecked_transmute(sself)
+			unchecked_transmute(sself)
 		};
 		
 		// This is allowed because we have repr transparent.
@@ -199,7 +225,7 @@ impl<T, To> Contract<T, To> {
 		let data: T = self.ignore_into();
 		
 		unsafe {
-			let result: To = inline_unchecked_transmute(data);
+			let result: To = unchecked_transmute(data);
 			result
 		}
 	}
@@ -209,14 +235,14 @@ impl<T, To> Deref for Contract<T, To> {
 	type Target = T;
 	
 	#[inline(always)]
-	fn deref<'a>(&'a self) -> &'a Self::Target {
+	fn deref(&self) -> &Self::Target {
 		self.as_data()
 	}
 }
 
 impl<T, To> DerefMut for Contract<T, To> {
 	#[inline(always)]
-	fn deref_mut<'a>(&'a mut self) -> &'a mut Self::Target {
+	fn deref_mut(&mut self) -> &mut Self::Target {
 		self.as_mut_data()
 	}
 }

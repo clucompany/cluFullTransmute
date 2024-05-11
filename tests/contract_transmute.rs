@@ -63,7 +63,7 @@ fn test_maybe_transmute_correct_struct() {
 		// The test is dirty, we essentially cut the structure.
 		// ----------------------------------------------------
 		// ignore checksize_new.
-		Contract::<_, ShadowData>::force_new(10usize)
+		Contract::<_, ShadowData>::new_unchecked(10usize)
 	};
 	let shadow_data: ShadowData = {
 		let mut a = maybe.into();

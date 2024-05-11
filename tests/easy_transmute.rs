@@ -70,8 +70,8 @@ fn full_transmute_correct() {
 	assert_eq!(a_hash, b_hash);
 	
 	drop(b);
-	assert_eq!(unsafe { CHECK_DROP1 }, false);
-	assert_eq!(unsafe { CHECK_DROP2 }, true);
+	assert!(!unsafe { CHECK_DROP1 });
+	assert!(unsafe { CHECK_DROP2 });
 	// We check the work of the destructor, 
 	//
 	// if the destructor does not work, 

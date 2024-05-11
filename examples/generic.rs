@@ -1,6 +1,6 @@
 
 use core::fmt::Display;
-use cluFullTransmute::transmute::transmute_or_panic;
+use cluFullTransmute::transmute_or_panic;
 
 /// Implementation of a simple transmutation with a generic parameter inside.
 
