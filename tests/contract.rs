@@ -2,6 +2,8 @@ use core::hash::{Hash, Hasher};
 use core::mem::MaybeUninit;
 use std::collections::hash_map::DefaultHasher;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "contract")))]
+#[cfg(any(test, feature = "contract"))]
 #[test]
 fn test_maybe_transmute_correct_struct() {
 	use cluFullTransmute::contract::Contract;

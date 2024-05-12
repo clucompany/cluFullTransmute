@@ -1,48 +1,48 @@
 use cluFullTransmute::transmute_or_panic;
 use core::fmt::Display;
 
-// Implementation of a simple transmutation with a generic parameter inside.
+/*
+	For example, let's write some code with a Drop trait that panics when dropped and
+	holds some data. We then transmute this data to another similar struct and check
+	that we have effectively overridden the Drop trait and have a different struct
+	with some data.
 
+	We can also remove the Drop trait altogether or do any number of other things.
+*/
+
+/// Struct to panic when dropped
 #[derive(Debug)]
 #[repr(transparent)]
-struct A<T> {
-	#[allow(dead_code)]
-	data: T,
-}
+struct PanicWhenDrop<T>(T);
 
-impl<T> Drop for A<T> {
+impl<T> Drop for PanicWhenDrop<T> {
 	fn drop(&mut self) {
-		panic!("Invalid beh");
+		panic!("panic, discovered `drop(PanicWhenDrop);`");
 	}
 }
 
+/// Struct to print value when dropped
 #[derive(Debug)]
 #[repr(transparent)]
-struct B<T>
+struct PrintlnWhenDrop<T: Display>(T)
 where
-	T: Display,
-{
-	data: T,
-}
+	T: Display;
 
-impl<T> Drop for B<T>
+impl<T> Drop for PrintlnWhenDrop<T>
 where
 	T: Display,
 {
 	fn drop(&mut self) {
-		println!("{}", self.data);
+		println!("println: {}", self.0);
 	}
 }
 
 fn main() {
-	let a: A<u16> = A {
-		// original and panic when falling
-		data: 1024,
-	};
-	println!("in: {:?}", a);
+	let a: PanicWhenDrop<u16> = PanicWhenDrop(1024);
+	println!("in a: {:?}", a);
 
-	let b: B<u16> = unsafe { transmute_or_panic(a) };
-	println!("out: {:?}", b);
+	let b: PrintlnWhenDrop<u16> = unsafe { transmute_or_panic(a as PanicWhenDrop<u16>) };
+	println!("out b: {:?}", b);
 
-	drop(b); // <--- println!
+	drop(b); // <--- drop, PrintlnWhenDrop!
 }
