@@ -8,7 +8,7 @@ edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
 
-description = "A more complete and extended version of data transformation with and without constraint checking."
+description = "A more complete and extended version of data type conversion without constraint checks."
 keywords = ["transmute", "unsafe_transmute", "cluFullTransmute", "no_std", "clucompany"]
 categories = ["development-tools", "memory-management"]
 

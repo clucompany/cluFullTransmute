@@ -36,7 +36,7 @@
 ## Library features:
 
 1. Casting any type A to any type B with generic data without and with data dimension checking.
-2. Ability to use transmutation in constant functions in very old versions of rust..
+2. Ability to use transmutation in constant functions in very old versions of rust.
 3. Possibility of delayed transmutation through contracts.
 4. Ability to work without the standard library.
 
