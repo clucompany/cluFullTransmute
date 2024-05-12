@@ -33,6 +33,13 @@
 1. When converting types without checking the size of the data, you really need to understand what you are doing.
 2. You must understand the specifics of the platform you are using.
 
+## Library features:
+
+1. Casting any type A to any type B with generic data without and with data dimension checking.
+2. Ability to use transmutation in constant functions in very old versions of rust..
+3. Possibility of delayed transmutation through contracts.
+4. Ability to work without the standard library.
+
 ## Usage:
 
 Add this to your Cargo.toml:
@@ -46,13 +53,6 @@ and this to your source code:
 ```rust
 use cluFullTransmute::mem::transmute;
 ```
-
-## Library Features
-
-1. Casting any type A to any type B with generic data without and with data dimension checking.
-2. Ability to use transmutation in constant functions in very old versions of rust..
-3. Possibility of delayed transmutation through contracts.
-4. Ability to work without the standard library.
 
 ## Example:
 ```rust
