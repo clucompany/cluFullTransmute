@@ -1,4 +1,4 @@
-//Copyright 2022-2024 #UlinProject Denis Kotlyarov (Денис Котляров)
+//Copyright 2019-2024 #UlinProject Denis Kotlyarov (Денис Котляров)
 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #Ulin Project 2022-2024
+// #Ulin Project 2019-2024
 /*!
 
 A more complete and extended version of data type conversion without constraint checks.
