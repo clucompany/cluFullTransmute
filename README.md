@@ -1,146 +1,134 @@
-# cluFullTransmute
-[![CI](https://github.com/clucompany/cluFullTransmute/actions/workflows/CI.yml/badge.svg?event=push)](https://github.com/clucompany/cluFullTransmute/actions/workflows/CI.yml)
-[![Build Status](https://travis-ci.org/clucompany/cluFullTransmute.svg?branch=master)](https://travis-ci.org/clucompany/cluFullTransmute)
-[![Apache licensed](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
-[![crates.io](https://img.shields.io/crates/v/cluFullTransmute)](https://crates.io/crates/cluFullTransmute)
-[![Documentation](https://docs.rs/cluFullTransmute/badge.svg)](https://docs.rs/cluFullTransmute)
+<div id="header" align="center">
 
-A more complete and extended version of data type conversion without constraint checks.
+  <b>[clufulltransmute]</b>
+  
+  ( A more complete and extended version of data type conversion without constraint checks. )
+  </br></br>
 
-# Library Features
+<div id="badges">
+  <a href="./LICENSE">
+    <img src="https://github.com/UlinProject/img/blob/main/short_32/apache2.png?raw=true" alt="apache2"/>
+  </a>
+  <a href="https://crates.io/crates/cluFullTransmute">
+    <img src="https://github.com/UlinProject/img/blob/main/short_32/cratesio.png?raw=true" alt="cratesio"/>
+  </a>
+  <a href="https://docs.rs/cluFullTransmute">
+    <img src="https://github.com/UlinProject/img/blob/main/short_32/docrs.png?raw=true" alt="docrs"/>
+  </a>
+  <a href="https://github.com/denisandroid">
+    <img src="https://github.com/UlinProject/img/blob/main/short_32/uproject.png?raw=true" alt="uproject"/>
+  </a>
+  <a href="https://github.com/clucompany">
+    <img src="https://github.com/UlinProject/img/blob/main/short_32/clulab.png?raw=true" alt="clulab"/>
+  </a>
+	
+  [![CI](https://github.com/clucompany/cluFullTransmute/actions/workflows/CI.yml/badge.svg?event=push)](https://github.com/clucompany/cluFullTransmute/actions/workflows/CI.yml) 
 
-1. Casting any type A to any type B with generic data without and with data dimension checking.
-2. Ability to use transmutation in constant functions in very old versions of rust.
-3. Possibility of delayed transmutation through contracts.
-4. Ability to work without the standard library.
 
-# !!! ATTENTION !!!
+</div>
+</div>
+
+## !!! ATTENTION !!!
 
 1. When converting types without checking the size of the data, you really need to understand what you are doing.
 2. You must understand the specifics of the platform you are using.
 
+## Usage:
 
-# Use
+Add this to your Cargo.toml:
 
-### 1. GenericType
-
-```rust
-use core::fmt::Display;
-use cluFullTransmute::transmute::transmute_or_panic;
-
-/// Implementation of a simple transmutation with a generic parameter inside.
-
-#[derive(Debug)]
-#[repr(transparent)]
-struct A<T> {
-	#[allow(dead_code)]
-	data: T
-}
-
-impl<T> Drop for A<T> {
-	fn drop(&mut self) {
-		panic!("Invalid beh");
-	}
-}
-
-#[derive(Debug)]
-#[repr(transparent)]
-struct B<T> where T: Display {
-	data: T,
-}
-
-impl<T> Drop for B<T> where T: Display {
-	fn drop(&mut self) {
-		println!("{}", self.data);
-	}
-}
-
-fn main() {
-	let a: A<u16> = A { // original and panic when falling
-		data: 1024
-	};
-	println!("in: {:?}", a);
-	
-	let b: B<u16> = unsafe { transmute_or_panic(a) };
-	println!("out: {:?}", b);
-	
-	drop(b); // <--- println!
-}
+```toml
+[dependencies]
+cluFullTransmute = "1.3.0"
 ```
 
-### 2. Contract
-
+and this to your source code:
 ```rust
-use cluFullTransmute::contract::Contract;
+use cluFullTransmute::mem::transmute;
+```
+
+## Library Features
+
+1. Casting any type A to any type B with generic data without and with data dimension checking.
+2. Ability to use transmutation in constant functions in very old versions of rust..
+3. Possibility of delayed transmutation through contracts.
+4. Ability to work without the standard library.
+
+## Example:
+```rust
+use cluFullTransmute::transmute_or_panic;
+use core::fmt::Display;
 
 /*
-	For example, we will sign a contract to convert a String to a Vec<u8>, 
-	although this may not be exactly the case.
-	
-	Contracts are needed to create more secure APIs using transmutation in 
-	situations where it can't be proven.
+	For example, let's write some code with a Drop trait that panics when dropped and
+	holds some data. We then transmute this data to another similar struct and check
+	that we have effectively overridden the Drop trait and have a different struct
+	with some data.
+
+	We can also remove the Drop trait altogether or do any number of other things.
 */
 
-/// 
-struct MyData {
-	data: Contract<&'static str, &'static [u8]>,
-}
+/// Struct to panic when dropped
+#[derive(Debug)]
+#[repr(transparent)]
+struct PanicWhenDrop<T>(T);
 
-impl MyData {
-	#[inline]
-	const fn new(data: &'static str) -> Self {
-		let data = unsafe {
-			// Contract::force_new
-			// 
-			
-			// The `checksize_new_or_panic` function can only guarantee equality of data 
-			// dimensions, creating a contract is always unsafe, since the transmutation 
-			// of such data types can only be proven orally. But after signing the 
-			// transmutation contract, all functions for working with the transmuted are 
-			// not marked as unsafe.
-			//
-			Contract::checksize_new_or_panic(data)
-		};
-		Self {
-			data,
-		}	
-	}
-	
-	#[inline]
-	pub fn as_data(&self) -> &'static str {
-		&self.data
-	}
-	
-	#[inline]
-	pub fn as_sliceu8(&self) -> &'static [u8] {
-		self.data.as_datato()
-	}
-	
-	#[inline]
-	pub fn into(self) -> &'static [u8] {
-		self.data.into()
+impl<T> Drop for PanicWhenDrop<T> {
+	fn drop(&mut self) {
+		panic!("panic, discovered `drop(PanicWhenDrop);`");
 	}
 }
 
+/// Struct to print value when dropped
+#[derive(Debug)]
+#[repr(transparent)]
+struct PrintlnWhenDrop<T: Display>(T)
+where
+	T: Display;
+
+impl<T> Drop for PrintlnWhenDrop<T>
+where
+	T: Display,
+{
+	fn drop(&mut self) {
+		println!("println: {}", self.0);
+	}
+}
 
 fn main() {
-	const C_DATA: &'static str = "Test";
-	
-	// &'static str
-	let data = MyData::new(C_DATA);
-	assert_eq!(data.as_data(), C_DATA); // const_readtype: &'static str
-	assert_eq!(data.as_sliceu8(), C_DATA.as_bytes()); //const_readtype &'static [u8]
-	//
-	
-	// &'static u8
-	let vec = data.into(); // const_transmute: &'static str -> &'static [u8]
-	assert_eq!(vec, C_DATA.as_bytes());
+	let a: PanicWhenDrop<u16> = PanicWhenDrop(1024);
+	println!("in a: {:?}", a);
+
+	let b: PrintlnWhenDrop<u16> = unsafe { transmute_or_panic(a as PanicWhenDrop<u16>) };
+	println!("out b: {:?}", b);
+
+	drop(b); // <--- drop, PrintlnWhenDrop!
 }
 ```
 
+<a href="./examples">
+  See all
+</a>
 
-# License
+## License:
+This project has a single license (LICENSE-APACHE-2.0).
 
-Copyright 2022 #UlinProject Denis Kotlyarov (Денис Котляров)
+<div align="left">
+  <a href="https://github.com/denisandroid">
+    <img align="left" src="https://github.com/UlinProject/img/blob/main/block_220_100/uproject.png?raw=true" alt="uproject"/>
+  </a>
+  <b>&nbsp;Copyright (c) 2022-2024 #UlinProject</b>
+	
+  <b>&nbsp;(Denis Kotlyarov).</b>
+  </br></br></br>
+</div>
 
-Licensed under the Apache License, Version 2.0
+### Apache License:
+<div align="left">
+  <a href="./LICENSE">
+    <img align="left" src="https://github.com/UlinProject/img/blob/main/block_220_100/apache2.png?raw=true" alt="apache2"/>
+    
+  </a>
+  <b>&nbsp;Licensed under the Apache License, Version 2.0.</b>
+  </br></br></br></br>
+</div>
