@@ -28,19 +28,19 @@
 </div>
 </div>
 
-## !!! ATTENTION !!!
+## !!! ATTENTION
 
 1. When converting types without checking the size of the data, you really need to understand what you are doing.
 2. You must understand the specifics of the platform you are using.
 
-## Library features:
+## Library features
 
 1. Casting any type A to any type B with generic data without and with data dimension checking.
 2. Ability to use transmutation in constant functions in very old versions of rust.
 3. Possibility of delayed transmutation through contracts.
 4. Ability to work without the standard library.
 
-## Usage:
+## Usage
 
 Add this to your Cargo.toml:
 
@@ -54,7 +54,8 @@ and this to your source code:
 use cluFullTransmute::mem::transmute;
 ```
 
-## Example:
+## Example
+
 ```rust
 use cluFullTransmute::transmute_or_panic;
 use core::fmt::Display;
@@ -110,7 +111,8 @@ fn main() {
   See all
 </a>
 
-## License:
+## License
+
 This project has a single license (LICENSE-APACHE-2.0).
 
 <div align="left">
@@ -123,7 +125,8 @@ This project has a single license (LICENSE-APACHE-2.0).
   </br></br></br>
 </div>
 
-### Apache License:
+### Apache License
+
 <div align="left">
   <a href="./LICENSE">
     <img align="left" src="https://github.com/UlinProject/img/blob/main/block_220_100/apache2.png?raw=true" alt="apache2"/>

@@ -8,7 +8,6 @@ use cluFullTransmute::contract::Contract;
 	situations where it can't be proven.
 */
 
-///
 struct MyData {
 	data: Contract<&'static str, &'static [u8]>,
 }

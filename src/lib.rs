@@ -22,7 +22,7 @@ A more complete and extended version of data type conversion without constraint 
 1. When converting types without checking the size of the data, you really need to understand what you are doing.
 2. You must understand the specifics of the platform you are using.
 
-## Example:
+## Example
 
 ```rust
 use cluFullTransmute::transmute_or_panic;
