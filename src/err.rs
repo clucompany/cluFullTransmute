@@ -36,12 +36,7 @@ impl TransmuteErrKind {
 	/// of data dimensions at the input and output.
 	#[inline(always)]
 	pub const fn is_invalid_sizecheck(&self) -> bool {
-		match self {
-			Self::InvalidSizeCheck(..) => true,
-
-			#[allow(unreachable_patterns)]
-			_ => false,
-		}
+		matches!(self, Self::InvalidSizeCheck(..))
 	}
 
 	/// Always panics in const mode, this feature will be added in the future.

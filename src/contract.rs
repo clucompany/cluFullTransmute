@@ -1,8 +1,8 @@
 //! Data Transformation Contract.
 
-use crate::mem::unchecked_transmute;
 use crate::TransmuteErr;
 use crate::TransmuteErrKind;
+use crate::mem::unchecked_transmute;
 use core::cmp::Ordering;
 use core::fmt::Debug;
 use core::fmt::Formatter;
@@ -161,7 +161,7 @@ impl<T, To> Contract<T, To> {
 			}
 		}
 
-		let sself = Self::new_unchecked(in_data);
+		let sself = unsafe { Self::new_unchecked(in_data) };
 		Ok(sself)
 	}
 
@@ -187,7 +187,7 @@ impl<T, To> Contract<T, To> {
 			}
 		}
 
-		Self::new_unchecked(data)
+		unsafe { Self::new_unchecked(data) }
 	}
 
 	/// Get a link to the data.

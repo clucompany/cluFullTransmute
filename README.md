@@ -46,7 +46,7 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-cluFullTransmute = "1.3.0"
+cluFullTransmute = "1.3.1"
 ```
 
 and this to your source code:
@@ -119,7 +119,7 @@ This project has a single license (LICENSE-APACHE-2.0).
   <a href="https://github.com/denisandroid">
     <img align="left" src="https://github.com/UlinProject/img/blob/main/block_220_100/uproject.png?raw=true" alt="uproject"/>
   </a>
-  <b>&nbsp;Copyright (c) 2019-2024 #UlinProject</b>
+  <b>&nbsp;Copyright (c) 2019-2025 #UlinProject</b>
 	
   <b>&nbsp;(Denis Kotlyarov).</b>
   </br></br></br>

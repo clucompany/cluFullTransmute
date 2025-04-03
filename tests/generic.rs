@@ -40,8 +40,8 @@ fn easy_full_transmute_correct() {
 	// two structures with the same attachments
 	// the same way, and in case of an error I get a test failure.
 
-	const ONE_DATA: usize = usize::max_value();
-	const TWO_DATA: usize = usize::min_value();
+	const ONE_DATA: usize = usize::MAX;
+	const TWO_DATA: usize = usize::MIN;
 	const THREE_DATA: bool = true;
 
 	let a = A(ONE_DATA, TWO_DATA, THREE_DATA);

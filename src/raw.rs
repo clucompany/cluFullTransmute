@@ -25,7 +25,7 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 		indata: ManuallyDrop::new(in_data),
 	};
 
-	ManuallyDrop::into_inner(wait_transmute_data.todata)
+	ManuallyDrop::into_inner(unsafe { wait_transmute_data.todata })
 }
 
 /// Reinterprets the bits of a value of one type as another type.
@@ -49,5 +49,5 @@ pub const unsafe fn inline_unchecked_transmute<T, To>(in_data: T) -> To {
 		indata: ManuallyDrop::new(in_data),
 	};
 
-	ManuallyDrop::into_inner(wait_transmute_data.todata)
+	ManuallyDrop::into_inner(unsafe { wait_transmute_data.todata })
 }

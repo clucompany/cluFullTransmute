@@ -1,4 +1,4 @@
-//Copyright 2019-2024 #UlinProject Denis Kotlyarov (Денис Котляров)
+//Copyright 2019-2025 #UlinProject Denis Kotlyarov (Денис Котляров)
 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #Ulin Project 2019-2024
+// #Ulin Project 2019-2025
 /*!
 
 A more complete and extended version of data type conversion without constraint checks.
@@ -87,7 +87,6 @@ fn main() {
 #![allow(non_snake_case)]
 #![allow(clippy::tabs_in_doc_comments)]
 #![allow(clippy::needless_doctest_main)]
-#![allow(clippy::match_like_matches_macro)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(not(feature = "support_stderr"), no_std)]
 
@@ -152,7 +151,7 @@ pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
 		}
 	}
 
-	unchecked_transmute(in_data)
+	unsafe { unchecked_transmute(in_data) }
 }
 
 /// A inline constant function reinterprets the bits of a value of one type as another type.
@@ -178,7 +177,7 @@ pub const unsafe fn inline_transmute_or_panic<D, To>(in_data: D) -> To {
 		}
 	}
 
-	inline_unchecked_transmute(in_data)
+	unsafe { inline_unchecked_transmute(in_data) }
 }
 
 /// A constant function reinterprets the bits of a value of one type as another type.
@@ -201,7 +200,7 @@ pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, Tran
 		}
 	}
 
-	Ok(unchecked_transmute(in_data))
+	Ok(unsafe { unchecked_transmute(in_data) })
 }
 
 /// A inline constant function reinterprets the bits of a value of one type as another type.
@@ -229,5 +228,5 @@ pub const unsafe fn inline_transmute_or_errresult<D, To>(
 		}
 	}
 
-	Ok(inline_unchecked_transmute(in_data))
+	Ok(unsafe { inline_unchecked_transmute(in_data) })
 }

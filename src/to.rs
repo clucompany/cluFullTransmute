@@ -73,7 +73,7 @@ where
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn transmute_or_panic<To>(self) -> To {
-		crate::transmute_or_panic(self)
+		unsafe { crate::transmute_or_panic(self) }
 	}
 
 	/// A inline constant function reinterprets the bits of a value of one type as another type.
@@ -87,7 +87,7 @@ where
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	#[inline(always)]
 	unsafe fn inline_transmute_or_panic<To>(self) -> To {
-		crate::inline_transmute_or_panic(self)
+		unsafe { crate::inline_transmute_or_panic(self) }
 	}
 
 	/// A constant function reinterprets the bits of a value of one type as another type.
@@ -98,7 +98,7 @@ where
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>> {
-		crate::transmute_or_errresult(self)
+		unsafe { crate::transmute_or_errresult(self) }
 	}
 
 	/// A inline constant function reinterprets the bits of a value of one type as another type.
@@ -112,7 +112,7 @@ where
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn inline_transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>> {
-		crate::inline_transmute_or_errresult(self)
+		unsafe { crate::inline_transmute_or_errresult(self) }
 	}
 
 	/// Reinterprets the bits of a value of one type as another type.
@@ -121,7 +121,7 @@ where
 	/// # Safety
 	/// No protections.
 	unsafe fn unchecked_transmute<To>(self) -> To {
-		crate::raw::unchecked_transmute(self)
+		unsafe { crate::raw::unchecked_transmute(self) }
 	}
 
 	/// Reinterprets the bits of a value of one type as another type.
@@ -133,6 +133,6 @@ where
 	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
 	#[cfg(any(test, feature = "inline"))]
 	unsafe fn inline_unchecked_transmute<To>(self) -> To {
-		crate::raw::inline_unchecked_transmute(self)
+		unsafe { crate::raw::inline_unchecked_transmute(self) }
 	}
 }
