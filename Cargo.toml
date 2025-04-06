@@ -29,8 +29,9 @@ inline = []
 compatible_stdapi = []
 # includes `transmute_or_panic`, `transmute_or_errresult` api.
 support_size_check_transmute = []
-# includes `core::fmt::Display`, `std::error::Error` api.
+# enables the `std::error::Error` API for errors.
 support_stderr = []
+# includes `to.rs` api.
 to = []
 
 
