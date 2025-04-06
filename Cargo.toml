@@ -21,11 +21,21 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = ["contract", "inline", "compatible_stdapi", "support_size_check_transmute"]
+# includes `contract.rs` api.
 contract = []
+# includes `inline_unchecked_transmute` api.
 inline = []
+# includes `mem::transmute` api.
 compatible_stdapi = []
+# includes `transmute_or_panic`, `transmute_or_errresult` api.
 support_size_check_transmute = []
+# includes `core::fmt::Display`, `std::error::Error` api.
 support_stderr = []
 to = []
+
+
+# Add transmutation checks regardless of the selected function, 
+# only works when `debug_assert` is active
+require_debug_assert_transmute = []
 
 [dependencies]

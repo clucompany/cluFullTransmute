@@ -11,6 +11,7 @@ use core::marker::PhantomData;
 use core::mem::size_of;
 use core::ops::Deref;
 use core::ops::DerefMut;
+use core::hash::Hasher;
 
 /// A contract for converting or reading data of related types.
 /// Creating such a contract is not safe because only the creator of
@@ -26,7 +27,7 @@ impl<T, To> Clone for Contract<T, To>
 where
 	T: Clone,
 {
-	#[inline(always)]
+	#[inline]
 	fn clone(&self) -> Self {
 		let new_data = Clone::clone(&self.data);
 
@@ -40,7 +41,7 @@ where
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
-		Debug::fmt(&self.data, f)
+		Debug::fmt(&self.data as &T, f)
 	}
 }
 
@@ -58,7 +59,7 @@ where
 	#[allow(clippy::partialeq_ne_impl)]
 	#[inline(always)]
 	fn ne(&self, other: &Self) -> bool {
-		PartialEq::ne(&self.data, other)
+		PartialEq::ne(&self.data as &T, other)
 	}
 }
 
@@ -68,27 +69,27 @@ where
 {
 	#[inline(always)]
 	fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
-		PartialOrd::partial_cmp(&self.data, o)
+		PartialOrd::partial_cmp(&self.data as &T, o)
 	}
 
 	#[inline(always)]
 	fn lt(&self, other: &Self) -> bool {
-		PartialOrd::lt(&self.data, other)
+		PartialOrd::lt(&self.data as &T, other)
 	}
 
 	#[inline(always)]
 	fn le(&self, other: &Self) -> bool {
-		PartialOrd::le(&self.data, other)
+		PartialOrd::le(&self.data as &T, other)
 	}
 
 	#[inline(always)]
 	fn gt(&self, other: &Self) -> bool {
-		PartialOrd::gt(&self.data, other)
+		PartialOrd::gt(&self.data as &T, other)
 	}
 
 	#[inline(always)]
 	fn ge(&self, other: &Self) -> bool {
-		PartialOrd::ge(&self.data, other)
+		PartialOrd::ge(&self.data as &T, other)
 	}
 }
 
@@ -98,7 +99,7 @@ where
 {
 	#[inline(always)]
 	fn assert_receiver_is_total_eq(&self) {
-		Eq::assert_receiver_is_total_eq(&self.data)
+		Eq::assert_receiver_is_total_eq(&self.data as &T)
 	}
 }
 
@@ -108,7 +109,7 @@ where
 {
 	#[inline(always)]
 	fn cmp(&self, c: &Self) -> core::cmp::Ordering {
-		Ord::cmp(&self.data, c)
+		Ord::cmp(&self.data as &T, c)
 	}
 }
 
@@ -119,9 +120,9 @@ where
 	#[inline(always)]
 	fn hash<H>(&self, h: &mut H)
 	where
-		H: core::hash::Hasher,
+		H: Hasher,
 	{
-		Hash::hash(&self.data, h)
+		Hash::hash(&self.data as &T, h)
 	}
 }
 
@@ -132,7 +133,7 @@ impl<T, To> Contract<T, To> {
 	///
 	/// This function does not check that the provided data is valid for this contract.
 	/// It is up to the caller to ensure that the data meets the requirements of the contract.
-	#[inline(always)]
+	#[inline]
 	pub const unsafe fn new_unchecked(data: T) -> Self {
 		Self {
 			data,
@@ -174,6 +175,7 @@ impl<T, To> Contract<T, To> {
 	/// It does not check that the data is valid for this contract.
 	/// It is up to the caller to ensure that the data meets the requirements of the contract.
 	#[inline]
+	#[track_caller]
 	pub const unsafe fn new_checksize_or_panic(data: T) -> Self {
 		{
 			// #1: Data dimension check
@@ -191,13 +193,13 @@ impl<T, To> Contract<T, To> {
 	}
 
 	/// Get a link to the data.
-	#[inline(always)]
+	#[inline]
 	pub const fn as_data(&self) -> &T {
 		&self.data
 	}
 
 	/// Get a link to the mutable data.
-	#[inline(always)]
+	#[inline]
 	pub fn as_mut_data(&mut self) -> &mut T {
 		&mut self.data
 	}
@@ -205,10 +207,10 @@ impl<T, To> Contract<T, To> {
 	/// Getting a pseudo-pointer to the converted value without substitution.
 	#[inline]
 	pub const fn as_datato<'a>(&'a self) -> &'a To {
-		let data_ptr: &'a T = self.as_data();
+		let data: &'a T = self.as_data();
 
 		unsafe {
-			let new_data_ptr: &'a To = unchecked_transmute(data_ptr);
+			let new_data_ptr: &'a To = unchecked_transmute(data);
 
 			new_data_ptr
 		}
@@ -217,10 +219,10 @@ impl<T, To> Contract<T, To> {
 	/// Getting a mutable pseudo-pointer to the converted value without substitution.
 	#[inline]
 	pub fn as_mut_datato<'a>(&'a mut self) -> &'a mut To {
-		let data_ptr: &'a mut T = self.as_mut_data();
+		let data: &'a mut T = self.as_mut_data();
 
 		unsafe {
-			let new_data_ptr: &'a mut To = unchecked_transmute(data_ptr);
+			let new_data_ptr: &'a mut To = unchecked_transmute(data);
 
 			new_data_ptr
 		}
@@ -240,6 +242,7 @@ impl<T, To> Contract<T, To> {
 
 	/// Execute the contract and return a value with the new data type.
 	#[inline]
+	#[track_caller]
 	pub const fn into(self) -> To {
 		let data: T = self.ignore_into();
 
