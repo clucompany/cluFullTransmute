@@ -7,11 +7,11 @@ use core::cmp::Ordering;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::hash::Hash;
+use core::hash::Hasher;
 use core::marker::PhantomData;
 use core::mem::size_of;
 use core::ops::Deref;
 use core::ops::DerefMut;
-use core::hash::Hasher;
 
 /// A contract for converting or reading data of related types.
 /// Creating such a contract is not safe because only the creator of

@@ -17,7 +17,7 @@ use crate::err::TransmuteErrKind;
 /// No protections.
 #[track_caller]
 pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
-	// Add transmutation checks regardless of the selected function, 
+	// Add transmutation checks regardless of the selected function,
 	// only works when `debug_assert` is active
 	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
 	{
@@ -56,7 +56,7 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 #[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
 #[cfg(any(test, feature = "inline"))]
 pub const unsafe fn inline_unchecked_transmute<T, To>(in_data: T) -> To {
-	// Add transmutation checks regardless of the selected function, 
+	// Add transmutation checks regardless of the selected function,
 	// only works when `debug_assert` is active
 	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
 	{
@@ -69,6 +69,7 @@ pub const unsafe fn inline_unchecked_transmute<T, To>(in_data: T) -> To {
 			errkind.unwrap();
 		}
 	}
+
 	union __TransmutData<T, To> {
 		indata: ManuallyDrop<T>,
 		todata: ManuallyDrop<To>,

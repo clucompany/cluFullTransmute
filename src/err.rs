@@ -87,7 +87,14 @@ impl TransmuteErrKind {
 	pub const fn unwrap(self) -> ! {
 		let description = self.description();
 
-		panic!("{}", description.as_str());
+		/// Cold Panic It is assumed that panic is not the main purpose of this library.
+		#[cold]
+		#[track_caller]
+		const fn __cold_panic(dstr: &str) -> ! {
+			panic!("{}", dstr);
+		}
+
+		__cold_panic(description.as_str());
 	}
 }
 
