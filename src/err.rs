@@ -121,8 +121,8 @@ impl<T> TransmuteErr<T> {
 
 	/// Always panics in const mode, this feature will be added in the future.
 	#[inline]
+	#[track_caller]
 	pub const fn unwrap(self) -> ! {
-		// TODO! This function will be added in the future to fully support const.
 		self.kind.unwrap()
 	}
 
