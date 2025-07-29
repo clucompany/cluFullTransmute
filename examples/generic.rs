@@ -39,10 +39,10 @@ where
 
 fn main() {
 	let a: PanicWhenDrop<u16> = PanicWhenDrop(1024);
-	println!("in a: {:?}", a);
+	println!("in a: {a:?}");
 
 	let b: PrintlnWhenDrop<u16> = unsafe { transmute_or_panic(a as PanicWhenDrop<u16>) };
-	println!("out b: {:?}", b);
+	println!("out b: {b:?}");
 
 	drop(b); // <--- drop, PrintlnWhenDrop!
 }
