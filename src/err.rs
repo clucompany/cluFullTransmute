@@ -42,6 +42,7 @@ impl TransmuteErrKind {
 	}
 
 	/// Creates a formatted error description in const mode.
+	#[inline]
 	pub const fn description(&self) -> DescriptionOut {
 		m_description(*self)
 	}
@@ -168,9 +169,9 @@ mod error_details {
 				+ DESCRIPTION_S1.len() // str
 				+ usize::MAX_DECIMAL_LEN // usize
 				+ DESCRIPTION_S2.len(); // str
-	const DESCRIPTION_S0: &str = "Error using `transmute`, size of type A=";
-	const DESCRIPTION_S1: &str = " is not equal to size of type B=";
-	const DESCRIPTION_S2: &str = ".";
+	const DESCRIPTION_S0: &str = "Invalid transmute: attempted to reinterpret type A (";
+	const DESCRIPTION_S1: &str = " bytes) as incompatible type B (";
+	const DESCRIPTION_S2: &str = " bytes). Sizes must match exactly.";
 	/// Creates a formatted error description in const mode.
 	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
 		let (a_size, b_size) = match kind {
