@@ -52,7 +52,7 @@ fn main() {
 	// &'static str
 	let data = MyData::new(C_DATA);
 	assert_eq!(data.as_data(), C_DATA); // const_readtype: &'static str
-	assert_eq!(data.as_sliceu8(), C_DATA.as_bytes()); //const_readtype &'static [u8]
+	assert_eq!(data.as_sliceu8(), C_DATA.as_bytes()); // const_readtype &'static [u8]
 	//
 
 	// &'static u8

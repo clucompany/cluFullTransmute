@@ -53,8 +53,8 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 /// No protections.
 #[inline(always)]
 #[track_caller]
-#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-#[cfg(any(test, feature = "inline"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+#[cfg(any(test, feature = "transmute-inline"))]
 pub const unsafe fn inline_unchecked_transmute<T, To>(in_data: T) -> To {
 	// Add transmutation checks regardless of the selected function,
 	// only works when `debug_assert` is active

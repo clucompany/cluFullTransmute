@@ -20,8 +20,8 @@ where
 	/// # Safety
 	///
 	/// If the sizes do not match, a panic arises.
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+	#[cfg(any(test, feature = "transmute-inline"))]
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn inline_transmute_or_panic<To>(self) -> To;
@@ -39,8 +39,8 @@ where
 	/// # Safety
 	///
 	/// If the size does not match, an error occurs.
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+	#[cfg(any(test, feature = "transmute-inline"))]
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn inline_transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>>;
@@ -56,8 +56,8 @@ where
 	///
 	/// # Safety
 	/// No protections.
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+	#[cfg(any(test, feature = "transmute-inline"))]
 	unsafe fn inline_unchecked_transmute<To>(self) -> To;
 }
 
@@ -81,8 +81,8 @@ where
 	/// # Safety
 	///
 	/// If the sizes do not match, a panic arises.
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+	#[cfg(any(test, feature = "transmute-inline"))]
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	#[inline(always)]
@@ -107,8 +107,8 @@ where
 	///
 	/// If the size does not match, an error occurs.
 	#[inline(always)]
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+	#[cfg(any(test, feature = "transmute-inline"))]
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn inline_transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>> {
@@ -130,8 +130,8 @@ where
 	/// # Safety
 	/// No protections.
 	#[inline(always)]
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
+	#[cfg(any(test, feature = "transmute-inline"))]
 	unsafe fn inline_unchecked_transmute<To>(self) -> To {
 		unsafe { crate::raw::inline_unchecked_transmute(self) }
 	}
