@@ -137,6 +137,7 @@ use core::mem::size_of;
 /// If the sizes do not match, a panic arises.
 #[track_caller]
 #[cfg_attr(feature = "transmute-inline", inline)]
+#[cfg_attr(feature = "transmute-always-inline", inline(always))]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
@@ -161,6 +162,7 @@ pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
 ///
 /// If the size does not match, an error occurs.
 #[cfg_attr(feature = "transmute-inline", inline)]
+#[cfg_attr(feature = "transmute-always-inline", inline(always))]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {

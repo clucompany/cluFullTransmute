@@ -24,6 +24,7 @@ default = ["contract", "transmute-inline", "compatible_stdapi", "support_size_ch
 # includes `contract.rs` api.
 contract = []
 transmute-inline = []
+transmute-always-inline = []
 # includes `mem::transmute` api.
 compatible_stdapi = []
 # includes `transmute_or_panic`, `transmute_or_errresult` api.
