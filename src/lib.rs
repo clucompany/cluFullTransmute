@@ -88,7 +88,7 @@ fn main() {
 #![allow(clippy::tabs_in_doc_comments)]
 #![allow(clippy::needless_doctest_main)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(not(feature = "support_stderr"), no_std)]
+#![cfg_attr(not(feature = "stderr"), no_std)]
 
 /// Basic functions for dealing with memory.
 ///

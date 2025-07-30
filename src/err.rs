@@ -7,7 +7,7 @@ use core::ops::Deref;
 
 /// Error structure and error type with a detailed description of the cause.
 ///
-/// (Note that the `support_stderr` build flag includes std and
+/// (Note that the `stderr` build flag includes std and
 /// implements std::error::Error for the given error.)
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TransmuteErr<T> {
@@ -126,8 +126,9 @@ impl<T> Deref for TransmuteErr<T> {
 	}
 }
 
-#[cfg(feature = "support_stderr")]
-mod _support_stderr {
+#[cfg_attr(docsrs, doc(cfg(feature = "stderr")))]
+#[cfg(feature = "stderr")]
+mod stderr {
 	use crate::err::TransmuteErr;
 	use crate::err::TransmuteErrKind;
 	use core::fmt::Debug;
@@ -150,8 +151,8 @@ mod _support_stderr {
 }
 
 #[allow(unused_imports)]
-#[cfg(feature = "support_stderr")]
-pub use _support_stderr::*;
+#[cfg(feature = "stderr")]
+pub use stderr::*;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "error_details")))]
 #[cfg(any(test, feature = "error_details"))]
@@ -200,7 +201,7 @@ mod error_details {
 	#[inline]
 	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
 		match kind {
-			TransmuteErrKind::InvalidSizeCheck(..) => "TransmuteErrKind::InvalidSizeCheck",
+			TransmuteErrKind::InvalidSizeCheck(..) => "TransmuteErrKind::InvalidSizeCheck(asize != bsize)",
 		};
 	}
 }

@@ -30,7 +30,7 @@ compatible_stdapi = []
 # includes `transmute_or_panic`, `transmute_or_errresult` api.
 support_size_check_transmute = []
 # enables the `std::error::Error` API for errors.
-support_stderr = []
+stderr = []
 # includes `to.rs` api.
 to = []
 error_details = ["cluConstData"]
