@@ -21,36 +21,35 @@ pub struct TransmuteErr<T> {
 /// Reason for getting the error.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TransmuteErrKind {
-	/// An error occurred while comparing the sizes of input and output types
-	/// (sizeA is not equal to sizeB).
-	InvalidSizeCheck(usize, usize),
+	/// Mismatch in input/output type sizes (e.g. `size_of::<A>() != size_of::<B>()`)
+	SizeMismatch { atype: usize, btype: usize },
 }
 
 impl TransmuteErrKind {
 	/// An error occurred while comparing the sizes of input and output types
 	/// (sizeA is not equal to sizeB).
 	#[inline]
-	pub const fn new_invalid_sizecheck(anum: usize, bnum: usize) -> Self {
-		Self::InvalidSizeCheck(anum, bnum)
+	pub const fn size_mismatch(atype: usize, btype: usize) -> Self {
+		Self::SizeMismatch { atype, btype }
 	}
 
 	/// Whether the current cause of the error is related to the inequality
 	/// of data dimensions at the input and output.
 	#[inline]
-	pub const fn is_invalid_sizecheck(&self) -> bool {
-		matches!(self, Self::InvalidSizeCheck(..))
+	pub const fn is_size_mismatch(&self) -> bool {
+		matches!(self, Self::SizeMismatch { .. })
 	}
 
 	/// Creates a formatted error description in const mode.
 	#[inline]
-	pub const fn description(&self) -> DescriptionOut {
-		m_description(*self)
+	pub const fn as_description(&self) -> DescriptionOut {
+		m_as_description(*self)
 	}
 
 	/// Initialize thread panic.
 	#[track_caller]
 	pub const fn unwrap(self) -> ! {
-		let description = self.description();
+		let description = self.as_description();
 
 		/// Cold Panic
 		///
@@ -67,7 +66,7 @@ impl TransmuteErrKind {
 
 impl<T> Display for TransmuteErr<T> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
-		let description = self.description();
+		let description = self.as_description();
 
 		Display::fmt(description.as_str(), f)
 	}
@@ -82,8 +81,8 @@ impl<T> TransmuteErr<T> {
 
 	/// Quickly create a bug with a predefined reason for output and input type unequal size.
 	#[inline]
-	pub const fn new_invalid_sizecheck(sizea: usize, sizeb: usize, data: T) -> Self {
-		Self::new(TransmuteErrKind::new_invalid_sizecheck(sizea, sizeb), data)
+	pub const fn size_mismatch(sizea: usize, sizeb: usize, data: T) -> Self {
+		Self::new(TransmuteErrKind::size_mismatch(sizea, sizeb), data)
 	}
 
 	/// Always panics in const mode, this feature will be added in the future.
@@ -143,8 +142,8 @@ mod stderr {
 		#[inline]
 		fn description(&self) -> &str {
 			match self.kind {
-				TransmuteErrKind::InvalidSizeCheck(..) => {
-					"TransmuteErr::InvalidSizeData(asize != bsize)"
+				TransmuteErrKind::SizeMismatch { .. } => {
+					"TransmuteErrKind::SizeMismatch(atype != bsize)"
 				}
 			}
 		}
@@ -173,9 +172,9 @@ mod error_details {
 	const DESCRIPTION_S1: &str = " bytes) as incompatible type B (";
 	const DESCRIPTION_S2: &str = " bytes). Sizes must match exactly.";
 	/// Creates a formatted error description in const mode.
-	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
+	pub(crate) const fn as_description(kind: TransmuteErrKind) -> DescriptionOut {
 		let (a_size, b_size) = match kind {
-			TransmuteErrKind::InvalidSizeCheck(a, b) => (a, b),
+			TransmuteErrKind::SizeMismatch { atype, btype } => (atype, btype),
 		};
 
 		let mut buf = ConstStrBuf::new();
@@ -233,14 +232,14 @@ mod error_details {
 	}
 
 	/// Creates a formatted error description in const mode.
-	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
+	pub(crate) const fn as_description(kind: TransmuteErrKind) -> DescriptionOut {
 		match kind {
-			TransmuteErrKind::InvalidSizeCheck(..) => {
-				Str::new("TransmuteErrKind::InvalidSizeCheck(asize != bsize)")
+			TransmuteErrKind::SizeMismatch(..) => {
+				Str::new("TransmuteErrKind::SizeMismatch(asize != bsize)")
 			}
 		}
 	}
 }
 
 pub use error_details::DescriptionOut;
-pub(crate) use error_details::description as m_description;
+pub(crate) use error_details::as_description as m_as_description;
