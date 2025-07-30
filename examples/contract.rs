@@ -25,7 +25,7 @@ impl MyData {
 			// transmutation contract, all functions for working with the transmuted are
 			// not marked as unsafe.
 			//
-			Contract::new_checksize_or_panic(data)
+			Contract::new_unchecked(data)
 		};
 		Self { data }
 	}

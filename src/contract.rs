@@ -1,7 +1,5 @@
 //! Data Transformation Contract.
 
-use crate::TransmuteErr;
-use crate::err::TransmuteErrKind;
 use crate::mem::unchecked_transmute;
 use core::cmp::Ordering;
 use core::fmt::Debug;
@@ -127,6 +125,13 @@ where
 }
 
 impl<T, To> Contract<T, To> {
+	/// Checking contract sizes at compile time
+	const CONSTANT_CHECKING_OF_INPUT_AND_OUTPUT_TYPE_DIMENSIONS: () = [()][
+			// If you read this in the error logs, then you have violated one of the terms of the
+			// agreement: full match of the dimensions of the input and output types.
+			(size_of::<T>() != size_of::<To>()) as usize
+		];
+
 	/// Create a contract without checks.
 	///
 	/// # Safety
@@ -135,69 +140,16 @@ impl<T, To> Contract<T, To> {
 	/// It is up to the caller to ensure that the data meets the requirements of the contract.
 	#[inline]
 	pub const unsafe fn new_unchecked(data: T) -> Self {
+		// clippy doesn't understand what we want to do, 
+		// and we want to make the const check mandatory, otherwise the compiler may skip it
+		#[allow(clippy::let_unit_value)] 
+		let _constant_checking_of_input_and_output_type_dimensions =
+			Self::CONSTANT_CHECKING_OF_INPUT_AND_OUTPUT_TYPE_DIMENSIONS;
+
 		Self {
 			data,
 			_pp: PhantomData,
 		}
-	}
-
-	// Create a contract, but only check the data sizes.
-	///
-	/// # Safety
-	///
-	/// This function only checks that the provided data has the correct size for this contract.
-	/// It does not check that the data is valid for this contract.
-	/// It is up to the caller to ensure that the data meets the requirements of the contract.
-	#[cfg_attr(
-		all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
-		inline
-	)]
-	#[cfg_attr(feature = "transmute-inline-always", inline(always))]
-	pub const unsafe fn new_checksize(in_data: T) -> Result<Self, TransmuteErr<T>> {
-		{
-			// Data dimension check
-			let size_d = size_of::<T>();
-			let size_to = size_of::<To>();
-
-			if size_d != size_to {
-				let err = TransmuteErr::new_invalid_sizecheck(size_d, size_to, in_data);
-
-				return Err(err);
-			}
-		}
-
-		let sself = unsafe { Self::new_unchecked(in_data) };
-		Ok(sself)
-	}
-
-	/// Create a contract, but check the data sizes.
-	/// In case of a dimension mismatch, throw a panic.
-	///
-	/// # Safety
-	///
-	/// This function only checks that the provided data has the correct size for this contract.
-	/// It does not check that the data is valid for this contract.
-	/// It is up to the caller to ensure that the data meets the requirements of the contract.
-	#[track_caller]
-	#[cfg_attr(
-		all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
-		inline
-	)]
-	#[cfg_attr(feature = "transmute-inline-always", inline(always))]
-	pub const unsafe fn new_checksize_or_panic(data: T) -> Self {
-		{
-			// #1: Data dimension check
-			let size_d = size_of::<T>();
-			let size_to = size_of::<To>();
-
-			if size_d != size_to {
-				let errkind = TransmuteErrKind::new_invalid_sizecheck(size_d, size_to);
-
-				errkind.unwrap();
-			}
-		}
-
-		unsafe { Self::new_unchecked(data) }
 	}
 
 	/// Get a link to the data.
