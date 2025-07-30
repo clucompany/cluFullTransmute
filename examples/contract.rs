@@ -1,22 +1,22 @@
-use cluFullTransmute::contract::Contract;
+use cluFullTransmute::contract::TransmuteContract;
 
 /*
 	For example, we will sign a contract to convert a String to a Vec<u8>,
 	although this may not be exactly the case.
 
-	Contracts are needed to create more secure APIs using transmutation in
+	TransmuteContracts are needed to create more secure APIs using transmutation in
 	situations where it can't be proven.
 */
 
 struct MyData {
-	data: Contract<&'static str, &'static [u8]>,
+	data: TransmuteContract<&'static str, &'static [u8]>,
 }
 
 impl MyData {
 	#[inline]
 	const fn new(data: &'static str) -> Self {
 		let data = unsafe {
-			// Contract::new_checksize_or_panic
+			// TransmuteContract::new_checksize_or_panic
 			//
 
 			// The `new_checksize_or_panic` function can only guarantee equality of data
@@ -25,7 +25,7 @@ impl MyData {
 			// transmutation contract, all functions for working with the transmuted are
 			// not marked as unsafe.
 			//
-			Contract::new_unchecked(data)
+			TransmuteContract::new_unchecked(data)
 		};
 		Self { data }
 	}
@@ -37,7 +37,7 @@ impl MyData {
 
 	#[inline]
 	pub fn as_sliceu8(&self) -> &'static [u8] {
-		self.data.as_datato()
+		self.data.as_out()
 	}
 
 	#[inline]

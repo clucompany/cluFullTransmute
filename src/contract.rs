@@ -1,4 +1,4 @@
-//! Data Transformation Contract.
+//! Data Transformation TransmuteContract.
 
 use crate::mem::unchecked_transmute;
 use core::cmp::Ordering;
@@ -15,15 +15,15 @@ use core::ops::DerefMut;
 /// Creating such a contract is not safe because only the creator of
 /// the contract can guarantee that the converted type will match.
 #[repr(transparent)]
-pub struct Contract<T, To> {
-	data: T,
+pub struct TransmuteContract<IN, OUT> {
+	data: IN,
 
-	_pp: PhantomData<To>,
+	_pp: PhantomData<OUT>,
 }
 
-impl<T, To> Clone for Contract<T, To>
+impl<IN, OUT> Clone for TransmuteContract<IN, OUT>
 where
-	T: Clone,
+	IN: Clone,
 {
 	#[inline]
 	fn clone(&self) -> Self {
@@ -33,19 +33,19 @@ where
 	}
 }
 
-impl<T, To> Debug for Contract<T, To>
+impl<IN, OUT> Debug for TransmuteContract<IN, OUT>
 where
-	T: Debug,
+	IN: Debug,
 {
 	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
-		Debug::fmt(&self.data as &T, f)
+		Debug::fmt(&self.data as &IN, f)
 	}
 }
 
-impl<T, To> PartialEq for Contract<T, To>
+impl<IN, OUT> PartialEq for TransmuteContract<IN, OUT>
 where
-	T: PartialEq,
+	IN: PartialEq,
 {
 	#[inline]
 	fn eq(&self, other: &Self) -> bool {
@@ -57,79 +57,79 @@ where
 	#[allow(clippy::partialeq_ne_impl)]
 	#[inline]
 	fn ne(&self, other: &Self) -> bool {
-		PartialEq::ne(&self.data as &T, other)
+		PartialEq::ne(&self.data as &IN, other)
 	}
 }
 
-impl<T, To> PartialOrd for Contract<T, To>
+impl<IN, OUT> PartialOrd for TransmuteContract<IN, OUT>
 where
-	T: PartialOrd,
+	IN: PartialOrd,
 {
 	#[inline]
 	fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
-		PartialOrd::partial_cmp(&self.data as &T, o)
+		PartialOrd::partial_cmp(&self.data as &IN, o)
 	}
 
 	#[inline]
 	fn lt(&self, other: &Self) -> bool {
-		PartialOrd::lt(&self.data as &T, other)
+		PartialOrd::lt(&self.data as &IN, other)
 	}
 
 	#[inline]
 	fn le(&self, other: &Self) -> bool {
-		PartialOrd::le(&self.data as &T, other)
+		PartialOrd::le(&self.data as &IN, other)
 	}
 
 	#[inline]
 	fn gt(&self, other: &Self) -> bool {
-		PartialOrd::gt(&self.data as &T, other)
+		PartialOrd::gt(&self.data as &IN, other)
 	}
 
 	#[inline]
 	fn ge(&self, other: &Self) -> bool {
-		PartialOrd::ge(&self.data as &T, other)
+		PartialOrd::ge(&self.data as &IN, other)
 	}
 }
 
-impl<T, To> Eq for Contract<T, To>
+impl<IN, OUT> Eq for TransmuteContract<IN, OUT>
 where
-	T: Eq,
+	IN: Eq,
 {
 	#[inline]
 	fn assert_receiver_is_total_eq(&self) {
-		Eq::assert_receiver_is_total_eq(&self.data as &T)
+		Eq::assert_receiver_is_total_eq(&self.data as &IN)
 	}
 }
 
-impl<T, To> Ord for Contract<T, To>
+impl<IN, OUT> Ord for TransmuteContract<IN, OUT>
 where
-	T: Ord,
+	IN: Ord,
 {
 	#[inline]
 	fn cmp(&self, c: &Self) -> core::cmp::Ordering {
-		Ord::cmp(&self.data as &T, c)
+		Ord::cmp(&self.data as &IN, c)
 	}
 }
 
-impl<T, To> Hash for Contract<T, To>
+impl<IN, OUT> Hash for TransmuteContract<IN, OUT>
 where
-	T: Hash,
+	IN: Hash,
 {
 	#[inline]
 	fn hash<H>(&self, h: &mut H)
 	where
 		H: Hasher,
 	{
-		Hash::hash(&self.data as &T, h)
+		Hash::hash(&self.data as &IN, h)
 	}
 }
 
-impl<T, To> Contract<T, To> {
+impl<IN, OUT> TransmuteContract<IN, OUT> {
 	/// Checking contract sizes at compile time
-	const CONSTANT_CHECKING_OF_INPUT_AND_OUTPUT_TYPE_DIMENSIONS: () = [()][
+	const TYPE_SIZE_MATCH_ASSERT: () = [()][
 			// If you read this in the error logs, then you have violated one of the terms of the
 			// agreement: full match of the dimensions of the input and output types.
-			(size_of::<T>() != size_of::<To>()) as usize
+			(size_of::<IN>() != size_of::<OUT>()) as usize
 		];
 
 	/// Create a contract without checks.
@@ -139,12 +139,11 @@ impl<T, To> Contract<T, To> {
 	/// This function does not check that the provided data is valid for this contract.
 	/// It is up to the caller to ensure that the data meets the requirements of the contract.
 	#[inline]
-	pub const unsafe fn new_unchecked(data: T) -> Self {
-		// clippy doesn't understand what we want to do, 
+	pub const unsafe fn new_unchecked(data: IN) -> Self {
+		// clippy doesn't understand what we want to do,
 		// and we want to make the const check mandatory, otherwise the compiler may skip it
-		#[allow(clippy::let_unit_value)] 
-		let _constant_checking_of_input_and_output_type_dimensions =
-			Self::CONSTANT_CHECKING_OF_INPUT_AND_OUTPUT_TYPE_DIMENSIONS;
+		#[allow(clippy::let_unit_value)]
+		let _constant_checking_of_input_and_output_type_dimensions = Self::TYPE_SIZE_MATCH_ASSERT;
 
 		Self {
 			data,
@@ -154,23 +153,24 @@ impl<T, To> Contract<T, To> {
 
 	/// Get a link to the data.
 	#[inline]
-	pub const fn as_data(&self) -> &T {
+	pub const fn as_in(&self) -> &IN {
 		&self.data
 	}
 
 	/// Get a link to the mutable data.
 	#[inline]
-	pub const fn as_mut_data(&mut self) -> &mut T {
+	pub const fn as_mut_in(&mut self) -> &mut IN {
 		&mut self.data
 	}
 
 	/// Getting a pseudo-pointer to the converted value without substitution.
 	#[inline]
-	pub const fn as_datato<'a>(&'a self) -> &'a To {
-		let data: &'a T = self.as_data();
+	#[track_caller]
+	pub const fn as_out<'a>(&'a self) -> &'a OUT {
+		let data: &'a IN = self.as_in();
 
 		unsafe {
-			let new_data_ptr: &'a To = unchecked_transmute(data);
+			let new_data_ptr: &'a OUT = unchecked_transmute(data);
 
 			new_data_ptr
 		}
@@ -178,11 +178,12 @@ impl<T, To> Contract<T, To> {
 
 	/// Getting a mutable pseudo-pointer to the converted value without substitution.
 	#[inline]
-	pub const fn as_mut_datato<'a>(&'a mut self) -> &'a mut To {
-		let data: &'a mut T = self.as_mut_data();
+	#[track_caller]
+	pub const fn as_mut_out<'a>(&'a mut self) -> &'a mut OUT {
+		let data: &'a mut IN = self.as_mut_in();
 
 		unsafe {
-			let new_data_ptr: &'a mut To = unchecked_transmute(data);
+			let new_data_ptr: &'a mut OUT = unchecked_transmute(data);
 
 			new_data_ptr
 		}
@@ -190,10 +191,11 @@ impl<T, To> Contract<T, To> {
 
 	/// Ignoring the contract, the requirement to return the data back.
 	#[inline]
-	pub const fn ignore_into(self) -> T {
+	#[track_caller]
+	pub const fn release_indata(self) -> IN {
 		// To implement permanent movement, follow these steps:
 		let sself: Self = self;
-		let data: T = unsafe { unchecked_transmute(sself) };
+		let data: IN = unsafe { unchecked_transmute(sself) };
 
 		// This is allowed because we have repr transparent.
 
@@ -203,28 +205,28 @@ impl<T, To> Contract<T, To> {
 	/// Execute the contract and return a value with the new data type.
 	#[inline]
 	#[track_caller]
-	pub const fn into(self) -> To {
-		let data: T = self.ignore_into();
+	pub const fn into(self) -> OUT {
+		let data: IN = self.release_indata();
 
 		unsafe {
-			let result: To = unchecked_transmute(data);
+			let result: OUT = unchecked_transmute(data);
 			result
 		}
 	}
 }
 
-impl<T, To> Deref for Contract<T, To> {
-	type Target = T;
+impl<IN, OUT> Deref for TransmuteContract<IN, OUT> {
+	type Target = IN;
 
 	#[inline]
 	fn deref(&self) -> &Self::Target {
-		self.as_data()
+		self.as_in()
 	}
 }
 
-impl<T, To> DerefMut for Contract<T, To> {
+impl<IN, OUT> DerefMut for TransmuteContract<IN, OUT> {
 	#[inline]
 	fn deref_mut(&mut self) -> &mut Self::Target {
-		self.as_mut_data()
+		self.as_mut_in()
 	}
 }
