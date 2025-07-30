@@ -8,9 +8,20 @@ edition = "2024"
 license = "Apache-2.0"
 readme = "README.md"
 
-description = "A more complete and extended version of data type conversion without constraint checks."
-keywords = ["transmute", "unsafe_transmute", "cluFullTransmute", "no_std", "clucompany"]
-categories = ["development-tools", "memory-management"]
+description = "Extended, no-constraint type transmutation API, featuring safe checks and const-ready logic."
+keywords = [
+	"transmute", 
+	"memory", 
+	"no_std", 
+	"type-conversion", 
+	"clucompany"
+]
+
+categories = [
+	"development-tools", 
+	"no-std",
+	"memory-management"
+]
 
 # docs.rs-specific configuration
 [package.metadata.docs.rs]
@@ -20,25 +31,35 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
-default = ["contract", "transmute-inline", "error_details", "compatible_stdapi", "support_size_check_transmute"]
+default = [
+	"contract", 
+	"transmute-inline", 
+	"error_details", 
+	"compatible_stdapi", 
+	"support_size_check_transmute"
+]
+
 # includes `contract.rs` api.
-contract = []
-transmute-inline = []
-transmute-inline-always = []
+contract = [] 
 # includes `mem::transmute` api.
 compatible_stdapi = []
-# includes `try_transmute_or_panic`, `try_transmute` api.
-support_size_check_transmute = []
 # enables the `std::error::Error` API for errors.
 stderr = []
-# includes `to.rs` api.
-to = []
-# display detailed error information in error description
-error_details = ["cluConstData"]
+
+transmute-inline = []
+transmute-inline-always = []
+
+# includes `try_transmute_or_panic`, `try_transmute` api.
+support_size_check_transmute = []
 
 # Add transmutation checks regardless of the selected function, 
 # only works when `debug_assert` is active
 require_debug_assert_transmute = ["support_size_check_transmute"]
+
+# includes `to.rs` api.
+to = []
+# display detailed error information in error description
+error_details = ["cluConstData"]
 
 [dependencies]
 cluConstData = {version = "2.1.1", default-features = false, features = ["const_buf"], optional = true}

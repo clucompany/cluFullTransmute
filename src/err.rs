@@ -104,6 +104,12 @@ impl<T> TransmuteErr<T> {
 		self.kind
 	}
 
+	/// Returns the reason for receiving the error.
+	#[inline]
+	pub fn kind(&self) -> TransmuteErrKind {
+		self.kind
+	}
+
 	/// Get a link to the data.
 	#[inline]
 	pub const fn as_data(&self) -> &T {

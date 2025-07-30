@@ -2,7 +2,7 @@
 
   <b>[clufulltransmute]</b>
   
-  ( A more complete and extended version of data type conversion without constraint checks. )
+  ( Extended, no-constraint type transmutation API, featuring safe checks and const-ready logic. )
   </br></br>
 
 <div id="badges">
@@ -46,64 +46,44 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-cluFullTransmute = "1.3.1"
+cluFullTransmute = "1.4.0"
 ```
 
 and this to your source code:
 ```rust
-use cluFullTransmute::mem::transmute;
+use cluFullTransmute::try_transmute;
+use cluFullTransmute::try_transmute_or_panic;
+use cluFullTransmute::transmute_unchecked;
 ```
 
 ## Example
 
+### concat_arrays
+
+Purpose: Combines two arrays of the same size `[T; N]` into a single fixed-length array `[T; N*2]`.
+
 ```rust
 use cluFullTransmute::try_transmute_or_panic;
-use core::fmt::Display;
 
-/*
-	For example, let's write some code with a Drop trait that panics when dropped and
-	holds some data. We then transmute this data to another similar struct and check
-	that we have effectively overridden the Drop trait and have a different struct
-	with some data.
-
-	We can also remove the Drop trait altogether or do any number of other things.
-*/
-
-/// Struct to panic when dropped
-#[derive(Debug)]
-#[repr(transparent)]
-struct PanicWhenDrop<T>(T);
-
-impl<T> Drop for PanicWhenDrop<T> {
-	fn drop(&mut self) {
-		panic!("panic, discovered `drop(PanicWhenDrop);`");
+pub const fn concat_arrays<T, const N: usize, const NDOUBLE: usize>(
+	a: [T; N],
+	b: [T; N],
+) -> [T; NDOUBLE] {
+	#[repr(C)]
+	struct Pair<T, const N: usize> {
+		a: [T; N],
+		b: [T; N],
 	}
-}
 
-/// Struct to print value when dropped
-#[derive(Debug)]
-#[repr(transparent)]
-struct PrintlnWhenDrop<T: Display>(T)
-where
-	T: Display;
-
-impl<T> Drop for PrintlnWhenDrop<T>
-where
-	T: Display,
-{
-	fn drop(&mut self) {
-		println!("println: {}", self.0);
-	}
+	unsafe { try_transmute_or_panic(Pair { a, b }) }
 }
 
 fn main() {
-	let a: PanicWhenDrop<u16> = PanicWhenDrop(1024);
-	println!("in a: {:?}", a);
+	const A: [u8; 4] = [1, 2, 3, 4];
+	const B: [u8; 4] = [5, 6, 7, 8];
+	const C: [u8; 8] = concat_arrays(A, B);
 
-	let b: PrintlnWhenDrop<u16> = unsafe { try_transmute_or_panic(a as PanicWhenDrop<u16>) };
-	println!("out b: {:?}", b);
-
-	drop(b); // <--- drop, PrintlnWhenDrop!
+	println!("{C:?}"); // [1, 2, 3, 4, 5, 6, 7, 8]
 }
 ```
 
