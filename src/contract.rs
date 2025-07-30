@@ -39,7 +39,7 @@ impl<T, To> Debug for Contract<T, To>
 where
 	T: Debug,
 {
-	#[inline(always)]
+	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
 		Debug::fmt(&self.data as &T, f)
 	}
@@ -49,7 +49,7 @@ impl<T, To> PartialEq for Contract<T, To>
 where
 	T: PartialEq,
 {
-	#[inline(always)]
+	#[inline]
 	fn eq(&self, other: &Self) -> bool {
 		PartialEq::eq(&self.data, other)
 	}
@@ -57,7 +57,7 @@ where
 	// I allow it because we are not making our own implementation,
 	// but only redirecting trait functions to original ones.
 	#[allow(clippy::partialeq_ne_impl)]
-	#[inline(always)]
+	#[inline]
 	fn ne(&self, other: &Self) -> bool {
 		PartialEq::ne(&self.data as &T, other)
 	}
@@ -67,27 +67,27 @@ impl<T, To> PartialOrd for Contract<T, To>
 where
 	T: PartialOrd,
 {
-	#[inline(always)]
+	#[inline]
 	fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
 		PartialOrd::partial_cmp(&self.data as &T, o)
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn lt(&self, other: &Self) -> bool {
 		PartialOrd::lt(&self.data as &T, other)
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn le(&self, other: &Self) -> bool {
 		PartialOrd::le(&self.data as &T, other)
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn gt(&self, other: &Self) -> bool {
 		PartialOrd::gt(&self.data as &T, other)
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn ge(&self, other: &Self) -> bool {
 		PartialOrd::ge(&self.data as &T, other)
 	}
@@ -97,7 +97,7 @@ impl<T, To> Eq for Contract<T, To>
 where
 	T: Eq,
 {
-	#[inline(always)]
+	#[inline]
 	fn assert_receiver_is_total_eq(&self) {
 		Eq::assert_receiver_is_total_eq(&self.data as &T)
 	}
@@ -107,7 +107,7 @@ impl<T, To> Ord for Contract<T, To>
 where
 	T: Ord,
 {
-	#[inline(always)]
+	#[inline]
 	fn cmp(&self, c: &Self) -> core::cmp::Ordering {
 		Ord::cmp(&self.data as &T, c)
 	}
@@ -117,7 +117,7 @@ impl<T, To> Hash for Contract<T, To>
 where
 	T: Hash,
 {
-	#[inline(always)]
+	#[inline]
 	fn hash<H>(&self, h: &mut H)
 	where
 		H: Hasher,
@@ -264,14 +264,14 @@ impl<T, To> Contract<T, To> {
 impl<T, To> Deref for Contract<T, To> {
 	type Target = T;
 
-	#[inline(always)]
+	#[inline]
 	fn deref(&self) -> &Self::Target {
 		self.as_data()
 	}
 }
 
 impl<T, To> DerefMut for Contract<T, To> {
-	#[inline(always)]
+	#[inline]
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		self.as_mut_data()
 	}
