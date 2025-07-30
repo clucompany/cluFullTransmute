@@ -208,7 +208,7 @@ impl<T, To> Contract<T, To> {
 
 	/// Get a link to the mutable data.
 	#[inline]
-	pub fn as_mut_data(&mut self) -> &mut T {
+	pub const fn as_mut_data(&mut self) -> &mut T {
 		&mut self.data
 	}
 
@@ -226,7 +226,7 @@ impl<T, To> Contract<T, To> {
 
 	/// Getting a mutable pseudo-pointer to the converted value without substitution.
 	#[inline]
-	pub fn as_mut_datato<'a>(&'a mut self) -> &'a mut To {
+	pub const fn as_mut_datato<'a>(&'a mut self) -> &'a mut To {
 		let data: &'a mut T = self.as_mut_data();
 
 		unsafe {
