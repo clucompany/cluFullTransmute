@@ -148,10 +148,14 @@ impl<T, To> Contract<T, To> {
 	/// This function only checks that the provided data has the correct size for this contract.
 	/// It does not check that the data is valid for this contract.
 	/// It is up to the caller to ensure that the data meets the requirements of the contract.
-	#[inline]
+	#[cfg_attr(
+		all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
+		inline
+	)]
+	#[cfg_attr(feature = "transmute-inline-always", inline(always))]
 	pub const unsafe fn new_checksize(in_data: T) -> Result<Self, TransmuteErr<T>> {
 		{
-			// #1: Data dimension check
+			// Data dimension check
 			let size_d = size_of::<T>();
 			let size_to = size_of::<To>();
 
@@ -174,8 +178,12 @@ impl<T, To> Contract<T, To> {
 	/// This function only checks that the provided data has the correct size for this contract.
 	/// It does not check that the data is valid for this contract.
 	/// It is up to the caller to ensure that the data meets the requirements of the contract.
-	#[inline]
 	#[track_caller]
+	#[cfg_attr(
+		all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
+		inline
+	)]
+	#[cfg_attr(feature = "transmute-inline-always", inline(always))]
 	pub const unsafe fn new_checksize_or_panic(data: T) -> Self {
 		{
 			// #1: Data dimension check

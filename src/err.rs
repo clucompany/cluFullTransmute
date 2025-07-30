@@ -1,6 +1,5 @@
 //! Error structure and error type with a detailed description of the cause.
 
-use cluConstData::buf::size::ConstByteBufSize;
 use core::fmt::Debug;
 use core::fmt::Display;
 use core::fmt::Formatter;
@@ -42,32 +41,9 @@ impl TransmuteErrKind {
 		matches!(self, Self::InvalidSizeCheck(..))
 	}
 
-	const CAPACITY: usize = Self::DESCRIPTION_S0.len() // str
-				+ usize::MAX_DECIMAL_LEN // usize
-				+ Self::DESCRIPTION_S1.len() // str
-				+ usize::MAX_DECIMAL_LEN // usize
-				+ Self::DESCRIPTION_S2.len(); // str
-	const DESCRIPTION_S0: &str = "Error using `transmute`, size of type A=";
-	const DESCRIPTION_S1: &str = " is not equal to size of type B=";
-	const DESCRIPTION_S2: &str = ".";
 	/// Creates a formatted error description in const mode.
-	const fn description(&self) -> ConstStrBuf<{ Self::CAPACITY }> {
-		let (a_size, b_size) = match self {
-			TransmuteErrKind::InvalidSizeCheck(a, b) => (*a, *b),
-		};
-
-		let mut buf = ConstStrBuf::new();
-		//
-		// format!(
-		//	{DESCRIPTION_S0} {a_size} {DESCRIPTION_S1} {b_size} {DESCRIPTION_S2}
-		//)
-		buf.push_str(Self::DESCRIPTION_S0);
-		buf.push_usize(a_size);
-		buf.push_str(Self::DESCRIPTION_S1);
-		buf.push_usize(b_size);
-		buf.push_str(Self::DESCRIPTION_S2);
-
-		buf
+	pub const fn description(&self) -> DescriptionOut {
+		m_description(*self)
 	}
 
 	/// Initialize thread panic.
@@ -75,8 +51,8 @@ impl TransmuteErrKind {
 	pub const fn unwrap(self) -> ! {
 		let description = self.description();
 
-		/// Cold Panic 
-		/// 
+		/// Cold Panic
+		///
 		/// It is assumed that panic is not the main purpose of this library.
 		#[cold]
 		#[track_caller]
@@ -176,4 +152,58 @@ mod _support_stderr {
 #[allow(unused_imports)]
 #[cfg(feature = "support_stderr")]
 pub use _support_stderr::*;
-use cluConstData::buf::ConstStrBuf;
+
+#[cfg_attr(docsrs, doc(cfg(feature = "error_details")))]
+#[cfg(any(test, feature = "error_details"))]
+mod error_details {
+	use crate::err::TransmuteErrKind;
+	use cluConstData::buf::ConstStrBuf;
+	use cluConstData::buf::size::ConstByteBufSize;
+
+	pub type DescriptionOut = ConstStrBuf<{ CAPACITY }>;
+
+	const CAPACITY: usize = DESCRIPTION_S0.len() // str
+				+ usize::MAX_DECIMAL_LEN // usize
+				+ DESCRIPTION_S1.len() // str
+				+ usize::MAX_DECIMAL_LEN // usize
+				+ DESCRIPTION_S2.len(); // str
+	const DESCRIPTION_S0: &str = "Error using `transmute`, size of type A=";
+	const DESCRIPTION_S1: &str = " is not equal to size of type B=";
+	const DESCRIPTION_S2: &str = ".";
+	/// Creates a formatted error description in const mode.
+	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
+		let (a_size, b_size) = match kind {
+			TransmuteErrKind::InvalidSizeCheck(a, b) => (a, b),
+		};
+
+		let mut buf = ConstStrBuf::new();
+		//
+		// format!(
+		//	{DESCRIPTION_S0} {a_size} {DESCRIPTION_S1} {b_size} {DESCRIPTION_S2}
+		//)
+		buf.push_str(DESCRIPTION_S0);
+		buf.push_usize(a_size);
+		buf.push_str(DESCRIPTION_S1);
+		buf.push_usize(b_size);
+		buf.push_str(DESCRIPTION_S2);
+
+		buf
+	}
+}
+
+#[cfg_attr(docsrs, doc(cfg(not(feature = "error_details"))))]
+#[cfg(not(any(test, feature = "error_details")))]
+mod error_details {
+	pub type DescriptionOut = &'static str;
+
+	/// Creates a formatted error description in const mode.
+	#[inline]
+	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
+		match kind {
+			TransmuteErrKind::InvalidSizeCheck(..) => "TransmuteErrKind::InvalidSizeCheck",
+		};
+	}
+}
+
+pub use error_details::DescriptionOut;
+pub(crate) use error_details::description as m_description;

@@ -20,7 +20,7 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
-default = ["contract", "transmute-inline", "compatible_stdapi", "support_size_check_transmute"]
+default = ["contract", "transmute-inline", "error_details", "compatible_stdapi", "support_size_check_transmute"]
 # includes `contract.rs` api.
 contract = []
 transmute-inline = []
@@ -33,11 +33,11 @@ support_size_check_transmute = []
 support_stderr = []
 # includes `to.rs` api.
 to = []
-
+error_details = ["cluConstData"]
 
 # Add transmutation checks regardless of the selected function, 
 # only works when `debug_assert` is active
 require_debug_assert_transmute = []
 
 [dependencies]
-cluConstData = {version = "2.1.1", default-features = false, features = ["const_buf"]}
+cluConstData = {version = "2.1.1", default-features = false, features = ["const_buf"], optional = true}
