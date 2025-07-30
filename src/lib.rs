@@ -99,10 +99,6 @@ pub mod mem {
 	/// Reinterprets the bits of a value of one type as another type.
 	/// The function is completely constant, in case of a size mismatch, a panic pops up.
 	pub use crate::transmute_or_panic as transmute;
-
-	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-	#[cfg(any(test, feature = "transmute-inline"))]
-	pub use crate::raw::inline_unchecked_transmute;
 	pub use crate::raw::unchecked_transmute;
 }
 
@@ -136,8 +132,8 @@ use core::mem::size_of;
 ///
 /// If the sizes do not match, a panic arises.
 #[track_caller]
-#[cfg_attr(feature = "transmute-inline", inline)]
-#[cfg_attr(feature = "transmute-always-inline", inline(always))]
+#[cfg_attr(all(feature = "transmute-inline", not(feature = "transmute-inline-always")), inline)]
+#[cfg_attr(feature = "transmute-inline-always", inline(always))]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
@@ -161,8 +157,8 @@ pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
 /// # Safety
 ///
 /// If the size does not match, an error occurs.
-#[cfg_attr(feature = "transmute-inline", inline)]
-#[cfg_attr(feature = "transmute-always-inline", inline(always))]
+#[cfg_attr(all(feature = "transmute-inline", not(feature = "transmute-inline-always")), inline)]
+#[cfg_attr(feature = "transmute-inline-always", inline(always))]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {
