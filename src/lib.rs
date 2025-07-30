@@ -15,7 +15,7 @@
 // #Ulin Project 2019-2025
 /*!
 
-A more complete and extended version of data type conversion without constraint checks.
+Extended, no-constraint type transmutation API, featuring safe checks and const-ready logic.
 
 ## !!! ATTENTION !!!
 
@@ -24,54 +24,32 @@ A more complete and extended version of data type conversion without constraint 
 
 ## Example
 
+### concat_arrays
+
+Purpose: Combines two arrays of the same size `[T; N]` into a single fixed-length array `[T; N*2]`.
+
 ```rust
-use cluFullTransmute::transmute_or_panic;
-use core::fmt::Display;
+use cluFullTransmute::try_transmute_or_panic;
 
-/*
-	For example, let's write some code with a Drop trait that panics when dropped and
-	holds some data. We then transmute this data to another similar struct and check
-	that we have effectively overridden the Drop trait and have a different struct
-	with some data.
-
-	We can also remove the Drop trait altogether or do any number of other things.
-*/
-
-/// Struct to panic when dropped
-#[derive(Debug)]
-#[repr(transparent)]
-struct PanicWhenDrop<T>(T);
-
-impl<T> Drop for PanicWhenDrop<T> {
-	fn drop(&mut self) {
-		panic!("panic, discovered `drop(PanicWhenDrop);`");
+pub const fn concat_arrays<T, const N: usize, const NDOUBLE: usize>(
+	a: [T; N],
+	b: [T; N],
+) -> [T; NDOUBLE] {
+	#[repr(C)]
+	struct Pair<T, const N: usize> {
+		a: [T; N],
+		b: [T; N],
 	}
-}
 
-/// Struct to print value when dropped
-#[derive(Debug)]
-#[repr(transparent)]
-struct PrintlnWhenDrop<T: Display>(T)
-where
-	T: Display;
-
-impl<T> Drop for PrintlnWhenDrop<T>
-where
-	T: Display,
-{
-	fn drop(&mut self) {
-		println!("println: {}", self.0);
-	}
+	unsafe { try_transmute_or_panic(Pair { a, b }) }
 }
 
 fn main() {
-	let a: PanicWhenDrop<u16> = PanicWhenDrop(1024);
-	println!("in a: {:?}", a);
+	const A: [u8; 4] = [1, 2, 3, 4];
+	const B: [u8; 4] = [5, 6, 7, 8];
+	const C: [u8; 8] = concat_arrays(A, B);
 
-	let b: PrintlnWhenDrop<u16> = unsafe { transmute_or_panic(a as PanicWhenDrop<u16>) };
-	println!("out b: {:?}", b);
-
-	drop(b); // <--- drop, PrintlnWhenDrop!
+	println!("{C:?}"); // [1, 2, 3, 4, 5, 6, 7, 8]
 }
 ```
 
@@ -88,7 +66,7 @@ fn main() {
 #![allow(clippy::tabs_in_doc_comments)]
 #![allow(clippy::needless_doctest_main)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(not(feature = "support_stderr"), no_std)]
+#![cfg_attr(not(feature = "stderr"), no_std)]
 
 /// Basic functions for dealing with memory.
 ///
@@ -96,20 +74,16 @@ fn main() {
 #[cfg_attr(docsrs, doc(cfg(feature = "compatible_stdapi")))]
 #[cfg(any(test, feature = "compatible_stdapi"))]
 pub mod mem {
+	pub use crate::raw::transmute_unchecked;
 	/// Reinterprets the bits of a value of one type as another type.
 	/// The function is completely constant, in case of a size mismatch, a panic pops up.
-	pub use crate::transmute_or_panic as transmute;
-
-	#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-	#[cfg(any(test, feature = "inline"))]
-	pub use crate::raw::inline_unchecked_transmute;
-	pub use crate::raw::unchecked_transmute;
+	pub use crate::try_transmute_or_panic as transmute;
 }
 
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub mod err;
-pub mod raw;
+mod raw;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "to")))]
 #[cfg(any(test, feature = "to"))]
@@ -122,14 +96,7 @@ pub mod contract;
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 use crate::err::TransmuteErr;
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
-use crate::err::TransmuteErrKind;
-#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-#[cfg(any(test, feature = "inline"))]
-use crate::raw::inline_unchecked_transmute;
-pub use crate::raw::unchecked_transmute;
-use core::mem::size_of;
+pub use crate::raw::transmute_unchecked;
 
 /// A constant function reinterprets the bits of a value of one type as another type.
 ///
@@ -137,49 +104,30 @@ use core::mem::size_of;
 ///
 /// If the sizes do not match, a panic arises.
 #[track_caller]
+#[cfg_attr(
+	all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
+	inline
+)]
+#[cfg_attr(feature = "transmute-inline-always", inline(always))]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
-pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
+pub const unsafe fn try_transmute_or_panic<D, To>(in_data: D) -> To {
+	use crate::err::TransmuteErrKind;
+	pub use crate::raw::transmute_unchecked;
+	use core::mem::size_of;
 	{
-		// #1: Data dimension check
+		// Data dimension check
 		let size_d = size_of::<D>();
 		let size_to = size_of::<To>();
 
 		if size_d != size_to {
-			let errkind = TransmuteErrKind::new_invalid_sizecheck(size_d, size_to);
+			let errkind = TransmuteErrKind::size_mismatch(size_d, size_to);
 
 			errkind.unwrap();
 		}
 	}
 
-	unsafe { unchecked_transmute(in_data) }
-}
-
-/// A inline constant function reinterprets the bits of a value of one type as another type.
-///
-/// # Safety
-///
-/// If the sizes do not match, a panic arises.
-#[track_caller]
-#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-#[cfg(any(test, feature = "inline"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
-#[inline(always)]
-pub const unsafe fn inline_transmute_or_panic<D, To>(in_data: D) -> To {
-	{
-		// #1: Data dimension check
-		let size_d = size_of::<D>();
-		let size_to = size_of::<To>();
-
-		if size_d != size_to {
-			let errkind = TransmuteErrKind::new_invalid_sizecheck(size_d, size_to);
-
-			errkind.unwrap();
-		}
-	}
-
-	unsafe { inline_unchecked_transmute(in_data) }
+	unsafe { transmute_unchecked(in_data) }
 }
 
 /// A constant function reinterprets the bits of a value of one type as another type.
@@ -187,48 +135,27 @@ pub const unsafe fn inline_transmute_or_panic<D, To>(in_data: D) -> To {
 /// # Safety
 ///
 /// If the size does not match, an error occurs.
+#[cfg_attr(
+	all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
+	inline
+)]
+#[cfg_attr(feature = "transmute-inline-always", inline(always))]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
-pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {
+pub const unsafe fn try_transmute<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {
+	pub use crate::raw::transmute_unchecked;
+	use core::mem::size_of;
 	{
-		// #1: Data dimension check
+		// Data dimension check
 		let size_d = size_of::<D>();
 		let size_to = size_of::<To>();
 
 		if size_d != size_to {
-			let err = TransmuteErr::new_invalid_sizecheck(size_d, size_to, in_data);
+			let err = TransmuteErr::size_mismatch(size_d, size_to, in_data);
 
 			return Err(err);
 		}
 	}
 
-	Ok(unsafe { unchecked_transmute(in_data) })
-}
-
-/// A inline constant function reinterprets the bits of a value of one type as another type.
-///
-/// # Safety
-///
-/// If the size does not match, an error occurs.
-#[inline(always)]
-#[cfg_attr(docsrs, doc(cfg(feature = "inline")))]
-#[cfg(any(test, feature = "inline"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
-pub const unsafe fn inline_transmute_or_errresult<D, To>(
-	in_data: D,
-) -> Result<To, TransmuteErr<D>> {
-	{
-		// #1: Data dimension check
-		let size_d = size_of::<D>();
-		let size_to = size_of::<To>();
-
-		if size_d != size_to {
-			let err = TransmuteErr::new_invalid_sizecheck(size_d, size_to, in_data);
-
-			return Err(err);
-		}
-	}
-
-	Ok(unsafe { inline_unchecked_transmute(in_data) })
+	Ok(unsafe { transmute_unchecked(in_data) })
 }

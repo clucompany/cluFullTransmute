@@ -1,6 +1,7 @@
-use cluFullTransmute::unchecked_transmute;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+
+use cluFullTransmute::transmute_unchecked;
 
 #[test]
 fn full_transmute_correct() {
@@ -53,7 +54,7 @@ fn full_transmute_correct() {
 		hasher.finish()
 	};
 
-	let b: B = unsafe { unchecked_transmute(a) };
+	let b: B = unsafe { transmute_unchecked(a) };
 	let b_hash = {
 		let mut hasher = DefaultHasher::new();
 		b.hash(&mut hasher);

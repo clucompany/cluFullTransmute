@@ -7,7 +7,7 @@ use core::ops::Deref;
 
 /// Error structure and error type with a detailed description of the cause.
 ///
-/// (Note that the `support_stderr` build flag includes std and
+/// (Note that the `stderr` build flag includes std and
 /// implements std::error::Error for the given error.)
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TransmuteErr<T> {
@@ -21,73 +21,39 @@ pub struct TransmuteErr<T> {
 /// Reason for getting the error.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TransmuteErrKind {
-	/// An error occurred while comparing the sizes of input and output types
-	/// (sizeA is not equal to sizeB).
-	InvalidSizeCheck(usize, usize),
+	/// Mismatch in input/output type sizes (e.g. `size_of::<A>() != size_of::<B>()`)
+	SizeMismatch { atype: usize, btype: usize },
 }
 
 impl TransmuteErrKind {
 	/// An error occurred while comparing the sizes of input and output types
 	/// (sizeA is not equal to sizeB).
 	#[inline]
-	pub const fn new_invalid_sizecheck(anum: usize, bnum: usize) -> Self {
-		Self::InvalidSizeCheck(anum, bnum)
+	pub const fn size_mismatch(atype: usize, btype: usize) -> Self {
+		Self::SizeMismatch { atype, btype }
 	}
 
 	/// Whether the current cause of the error is related to the inequality
 	/// of data dimensions at the input and output.
 	#[inline]
-	pub const fn is_invalid_sizecheck(&self) -> bool {
-		matches!(self, Self::InvalidSizeCheck(..))
+	pub const fn is_size_mismatch(&self) -> bool {
+		matches!(self, Self::SizeMismatch { .. })
 	}
 
-	const DESCRIPTION_S0: &str = "Error using `transmute`, size of type A=";
-	const DESCRIPTION_S1: &str = " is not equal to size of type B=";
-	const DESCRIPTION_S2: &str = ".";
 	/// Creates a formatted error description in const mode.
-	const fn description(
-		&self,
-	) -> ConcatWriter<
-		{
-			Self::DESCRIPTION_S0.len() // str
-				+ ConcatWriter::USIZE_MAX_LEN // usize
-				+ Self::DESCRIPTION_S1.len() // str
-				+ ConcatWriter::USIZE_MAX_LEN // usize
-				+ Self::DESCRIPTION_S2.len() // str
-		},
-	> {
-		let (a_size, b_size) = match self {
-			TransmuteErrKind::InvalidSizeCheck(a, b) => (*a, *b),
-		};
-
-		let mut concat = ConcatWriter::<
-			{
-				Self::DESCRIPTION_S0.len() // str
-					+ ConcatWriter::USIZE_MAX_LEN // usize
-					+ Self::DESCRIPTION_S1.len() // str
-					+ ConcatWriter::USIZE_MAX_LEN // usize
-					+ Self::DESCRIPTION_S2.len() // str
-			},
-		>::zeroed();
-		//
-		// similar: format!(
-		//	{DESCRIPTION_S0} {a_size} {DESCRIPTION_S1} {b_size} {DESCRIPTION_S2}
-		//)
-		concat.push_str(Self::DESCRIPTION_S0);
-		concat.push_usize(a_size);
-		concat.push_str(Self::DESCRIPTION_S1);
-		concat.push_usize(b_size);
-		concat.push_str(Self::DESCRIPTION_S2);
-
-		concat
+	#[inline]
+	pub const fn as_description(&self) -> DescriptionOut {
+		m_as_description(*self)
 	}
 
 	/// Initialize thread panic.
 	#[track_caller]
 	pub const fn unwrap(self) -> ! {
-		let description = self.description();
+		let description = self.as_description();
 
-		/// Cold Panic It is assumed that panic is not the main purpose of this library.
+		/// Cold Panic
+		///
+		/// It is assumed that panic is not the main purpose of this library.
 		#[cold]
 		#[track_caller]
 		const fn __cold_panic(dstr: &str) -> ! {
@@ -100,7 +66,7 @@ impl TransmuteErrKind {
 
 impl<T> Display for TransmuteErr<T> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
-		let description = self.description();
+		let description = self.as_description();
 
 		Display::fmt(description.as_str(), f)
 	}
@@ -115,8 +81,8 @@ impl<T> TransmuteErr<T> {
 
 	/// Quickly create a bug with a predefined reason for output and input type unequal size.
 	#[inline]
-	pub const fn new_invalid_sizecheck(sizea: usize, sizeb: usize, data: T) -> Self {
-		Self::new(TransmuteErrKind::new_invalid_sizecheck(sizea, sizeb), data)
+	pub const fn size_mismatch(sizea: usize, sizeb: usize, data: T) -> Self {
+		Self::new(TransmuteErrKind::size_mismatch(sizea, sizeb), data)
 	}
 
 	/// Always panics in const mode, this feature will be added in the future.
@@ -135,6 +101,12 @@ impl<T> TransmuteErr<T> {
 	/// Returns only the reason why the error was received.
 	#[inline]
 	pub fn into_kind(self) -> TransmuteErrKind {
+		self.kind
+	}
+
+	/// Returns the reason for receiving the error.
+	#[inline]
+	pub fn kind(&self) -> TransmuteErrKind {
 		self.kind
 	}
 
@@ -160,8 +132,9 @@ impl<T> Deref for TransmuteErr<T> {
 	}
 }
 
-#[cfg(feature = "support_stderr")]
-mod _support_stderr {
+#[cfg_attr(docsrs, doc(cfg(feature = "stderr")))]
+#[cfg(feature = "stderr")]
+mod stderr {
 	use crate::err::TransmuteErr;
 	use crate::err::TransmuteErrKind;
 	use core::fmt::Debug;
@@ -175,8 +148,8 @@ mod _support_stderr {
 		#[inline]
 		fn description(&self) -> &str {
 			match self.kind {
-				TransmuteErrKind::InvalidSizeCheck(..) => {
-					"TransmuteErr::InvalidSizeData(asize != bsize)"
+				TransmuteErrKind::SizeMismatch { .. } => {
+					"TransmuteErrKind::SizeMismatch(atype != bsize)"
 				}
 			}
 		}
@@ -184,266 +157,95 @@ mod _support_stderr {
 }
 
 #[allow(unused_imports)]
-#[cfg(feature = "support_stderr")]
-pub use _support_stderr::*;
+#[cfg(feature = "stderr")]
+pub use stderr::*;
 
-use crate::err::compact_concat::ConcatWriter;
+#[cfg_attr(docsrs, doc(cfg(feature = "error_details")))]
+#[cfg(feature = "error_details")]
+mod error_details {
+	use crate::err::TransmuteErrKind;
+	use cluConstData::buf::ConstStrBuf;
+	use cluConstData::buf::size::ConstByteBufSize;
 
-// TODO!: needs to be taken out of this crate.
-/// Compact concatenation in constant mode.
-///
-/// **Important:** This module is intended for internal use and should ideally
-/// be moved to a separate crate.
-mod compact_concat {
-	/// A concatenator that can perform a small set of concatenations in const mode.
-	/// Note that you must initially set the concatenation buffer to the largest possible size
-	///
-	/// (for numbers, just use ConcatWriter::USIZE_MAX_LEN)
-	pub struct ConcatWriter<const BUFF_SIZE: usize> {
-		/// Raw buffer for writing data, it is important that all data written is UTF-8 compliant.
-		arr: [u8; BUFF_SIZE],
-		/// The amount of data actually written
-		len: usize,
-	}
+	pub type DescriptionOut = ConstStrBuf<{ CAPACITY }>;
 
-	impl ConcatWriter<0> {
-		/// The number 0, always visible to the user.
-		pub const VI_ZEROED: u8 = b'0';
-
-		/// An array filled with visible zeros is used as the initial buffer.
-		pub const USIZE_VIZEROED: [u8; Self::USIZE_MAX_LEN] =
-			[Self::VI_ZEROED; Self::USIZE_MAX_LEN];
-
-		/// Defines the maximum possible length of the string representation of usize.
-		pub const USIZE_MAX_LEN: usize = match size_of::<usize>() {
-			a if a == size_of::<u128>() => b"340282366920938463463374607431768211455".len(),
-			a if a == size_of::<u64>() => b"18446744073709551615".len(),
-			a if a == size_of::<u32>() => b"4294967295".len(),
-			a if a == size_of::<u16>() => b"65535".len(),
-			a if a == size_of::<u8>() => b"255".len(),
-
-			_ => b"340282366920938463463374607431768211455".len(),
+	const CAPACITY: usize = DESCRIPTION_S0.len() // str
+				+ usize::MAX_DECIMAL_LEN // usize
+				+ DESCRIPTION_S1.len() // str
+				+ usize::MAX_DECIMAL_LEN // usize
+				+ DESCRIPTION_S2.len(); // str
+	const DESCRIPTION_S0: &str = "Invalid transmute: attempted to reinterpret type A (";
+	const DESCRIPTION_S1: &str = " bytes) as incompatible type B (";
+	const DESCRIPTION_S2: &str = " bytes). Sizes must match exactly.";
+	/// Creates a formatted error description in const mode.
+	pub(crate) const fn as_description(kind: TransmuteErrKind) -> DescriptionOut {
+		let (a_size, b_size) = match kind {
+			TransmuteErrKind::SizeMismatch { atype, btype } => (atype, btype),
 		};
+
+		let mut buf = ConstStrBuf::new();
+		//
+		// format!(
+		//	{DESCRIPTION_S0} {a_size} {DESCRIPTION_S1} {b_size} {DESCRIPTION_S2}
+		//)
+		buf.push_str(DESCRIPTION_S0);
+		buf.push_usize(a_size);
+		buf.push_str(DESCRIPTION_S1);
+		buf.push_usize(b_size);
+		buf.push_str(DESCRIPTION_S2);
+
+		buf
 	}
+}
 
-	impl<const BUFF_SIZE: usize> ConcatWriter<BUFF_SIZE> {
-		/// Initialize an empty buffer, presumably filled with zeros, but with a length of 0.
+#[cfg_attr(docsrs, doc(cfg(not(feature = "error_details"))))]
+#[cfg(not(feature = "error_details"))]
+mod error_details {
+	use core::ops::Deref;
+
+	use crate::err::TransmuteErrKind;
+
+	pub type DescriptionOut = &'static Str;
+
+	/// The most common `&str`, but in a separate type with the `as_str()`
+	/// function to solve the following problem:
+	///
+	/// use of unstable library feature `str_as_str`
+	/// see issue #130366 <https://github.com/rust-lang/rust/issues/130366> for more information
+	#[derive(Debug)]
+	#[repr(transparent)]
+	pub struct Str(str);
+
+	impl Str {
 		#[inline]
-		pub const fn zeroed() -> Self {
-			Self {
-				arr: unsafe { core::mem::zeroed() },
-				len: 0,
-			}
+		pub const fn new(a: &str) -> &Str {
+			unsafe { &*(a as *const _ as *const Str) }
 		}
 
-		/// Cloning a buffer with the same data.
-		#[allow(dead_code)]
-		pub const fn clone(&self) -> Self {
-			Self {
-				arr: self.arr,
-				len: self.len,
-			}
-		}
-
-		/// Clears the concatenator buffer, effectively setting the length to 0.
-		#[allow(dead_code)]
-		#[inline]
-		pub const fn clear(&mut self) {
-			self.len = 0;
-		}
-
-		/// Pointer to the array itself
-		#[inline]
-		pub const fn as_ptr(&self) -> *const u8 {
-			self.arr.as_ptr()
-		}
-
-		/// Number of bytes written
-		#[inline]
-		pub const fn len(&self) -> usize {
-			self.len
-		}
-
-		/// What is the maximum number of bytes that can be written to this array initially?
-		///
-		/// (Note that the number of bytes written is not taken into account in any way.)
-		#[inline]
-		pub const fn max_available_len(&self) -> usize {
-			self.arr.len()
-		}
-
-		/// How many more bytes can be written?
-		#[allow(dead_code)]
-		#[inline]
-		pub const fn available(&self) -> usize {
-			self.max_available_len() - self.len()
-		}
-
-		/// Returns how many more bytes can be written to the buffer
-		#[inline]
-		pub const fn as_slice(&self) -> &[u8] {
-			unsafe { core::slice::from_raw_parts(self.as_ptr(), self.len()) }
-		}
-
-		/// Represent buffer as string
 		#[inline]
 		pub const fn as_str(&self) -> &str {
-			unsafe { core::str::from_utf8_unchecked(self.as_slice()) }
-		}
-
-		/// Write a string to the buffer.
-		pub const fn push_str(&mut self, a: &str) -> usize {
-			self.push_arr(a.as_bytes())
-		}
-
-		/// Add an array to the buffer, note that this function is internal since there is no guarantee whether the array is UTF-8 compliant or not.
-		///
-		/// The function may fail if the array length is not sufficient.
-		const fn push_arr(&mut self, a: &[u8]) -> usize {
-			let a_len = a.len();
-			if (self.len() + a_len) > self.max_available_len() {
-				panic!("The buffer is too small to write these values.");
-			}
-
-			let max = a_len;
-			let mut i = 0;
-			while i < max {
-				self.arr[self.len + i] = a[i];
-
-				i += 1;
-			}
-
-			self.len += a_len;
-
-			a_len
-		}
-
-		/// Add a number to an array.
-		pub const fn push_usize(&mut self, mut a: usize) -> usize {
-			let mut u_buff = ConcatWriter::USIZE_VIZEROED;
-			let mut u_len;
-
-			match a {
-				0 => {
-					// result[USIZE_TOARRSIZE - 1] = VI_ZEROED;
-					u_len = 1;
-				}
-				_ => {
-					u_len = 0;
-
-					let mut i = ConcatWriter::USIZE_MAX_LEN;
-					loop {
-						u_buff[i - 1] = ((a % 10) as u8) + ConcatWriter::VI_ZEROED;
-						a /= 10;
-						u_len += 1;
-
-						if a == 0 {
-							break;
-						}
-						i -= 1;
-					}
-				}
-			}
-
-			let ptr = u_buff.as_ptr();
-			let ptr = unsafe { ptr.add(u_buff.len() - u_len) };
-			let slice = unsafe { core::slice::from_raw_parts(ptr, u_len) };
-
-			self.push_arr(slice)
+			unsafe { &*(self as *const _ as *const str) }
 		}
 	}
 
-	#[cfg(test)]
-	#[test]
-	fn __test_compact_concat_strusize_const() {
-		{
-			let mut u_writer = ConcatWriter::<{ ConcatWriter::USIZE_MAX_LEN }>::zeroed();
-			let u_sizeof = size_of::<usize>();
+	impl Deref for Str {
+		type Target = str;
 
-			if size_of::<u128>() <= u_sizeof {
-				// machine u64 mode
-				u_writer.push_usize(u128::MAX as _);
-				assert_eq!(u_writer.as_str(), "340282366920938463463374607431768211455");
-
-				if size_of::<u128>() == u_sizeof {
-					assert_eq!(u_writer.available(), 0);
-				}
-				u_writer.clear();
-			}
-			if size_of::<u64>() <= u_sizeof {
-				// machine u64 mode
-				u_writer.push_usize(u64::MAX as _);
-				assert_eq!(u_writer.as_str(), "18446744073709551615");
-				if size_of::<u64>() == u_sizeof {
-					assert_eq!(u_writer.available(), 0);
-				}
-				u_writer.clear();
-			}
-			if size_of::<u32>() <= u_sizeof {
-				// machine u32 mode
-				u_writer.push_usize(u32::MAX as _);
-				assert_eq!(u_writer.as_str(), "4294967295");
-				if size_of::<u32>() == u_sizeof {
-					assert_eq!(u_writer.available(), 0);
-				}
-				u_writer.clear();
-			}
-			if size_of::<u16>() <= u_sizeof {
-				// machine u16 mode
-				u_writer.push_usize(u16::MAX as _);
-				assert_eq!(u_writer.as_str(), "65535");
-				if size_of::<u16>() == u_sizeof {
-					assert_eq!(u_writer.available(), 0);
-				}
-				u_writer.clear();
-			}
-			if size_of::<u8>() <= u_sizeof {
-				// machine u16 mode
-				u_writer.push_usize(u8::MAX as _);
-				assert_eq!(u_writer.as_str(), "255");
-				if size_of::<u8>() == u_sizeof {
-					assert_eq!(u_writer.available(), 0);
-				}
-				u_writer.clear();
-			}
-
-			// zero
-			u_writer.push_usize(0 as _);
-			assert_eq!(u_writer.as_str(), "0");
-			u_writer.clear();
-			assert_eq!(u_writer.as_str(), "");
+		#[inline]
+		fn deref(&self) -> &Self::Target {
+			self.as_str()
 		}
-		{
-			// format_test
-			//
-			// format!(
-			//	Error using `transmute`, size of type A={} is not equal to size of type B={}.
-			// )
-			let a_size = 1024;
-			let b_size = 1025;
+	}
 
-			const S0: &str = "Error using `transmute`, size of type A=";
-			const S1: &str = " is not equal to size of type B=";
-			const S2: &str = ".";
-
-			let mut concat = ConcatWriter::<
-				{
-					S0.len()
-						+ ConcatWriter::USIZE_MAX_LEN
-						+ S1.len() + ConcatWriter::USIZE_MAX_LEN
-						+ S2.len()
-				},
-			>::zeroed();
-			concat.push_str(S0);
-			concat.push_usize(a_size);
-			concat.push_str(S1);
-			concat.push_usize(b_size);
-			concat.push_str(S2);
-
-			assert_eq!(
-				concat.as_str(),
-				"Error using `transmute`, size of type A=1024 is not equal to size of type B=1025.",
-			);
+	/// Creates a formatted error description in const mode.
+	pub(crate) const fn as_description(kind: TransmuteErrKind) -> DescriptionOut {
+		match kind {
+			TransmuteErrKind::SizeMismatch(..) => {
+				Str::new("TransmuteErrKind::SizeMismatch(asize != bsize)")
+			}
 		}
 	}
 }
+
+pub use error_details::DescriptionOut;
+pub(crate) use error_details::as_description as m_as_description;
