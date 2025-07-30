@@ -156,7 +156,7 @@ mod stderr {
 pub use stderr::*;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "error_details")))]
-#[cfg(any(test, feature = "error_details"))]
+#[cfg(feature = "error_details")]
 mod error_details {
 	use crate::err::TransmuteErrKind;
 	use cluConstData::buf::ConstStrBuf;
@@ -194,18 +194,50 @@ mod error_details {
 }
 
 #[cfg_attr(docsrs, doc(cfg(not(feature = "error_details"))))]
-#[cfg(not(any(test, feature = "error_details")))]
+#[cfg(not(feature = "error_details"))]
 mod error_details {
-	pub type DescriptionOut = &'static str;
+	use core::ops::Deref;
+
+	use crate::TransmuteErrKind;
+	pub type DescriptionOut = &'static Str;
+
+	/// The most common `&str`, but in a separate type with the `as_str()`
+	/// function to solve the following problem:
+	///
+	/// use of unstable library feature `str_as_str`
+	/// see issue #130366 <https://github.com/rust-lang/rust/issues/130366> for more information
+	#[derive(Debug)]
+	#[repr(transparent)]
+	pub struct Str(str);
+
+	impl Str {
+		#[inline]
+		pub const fn new(a: &str) -> &Str {
+			unsafe { &*(a as *const _ as *const Str) }
+		}
+
+		#[inline]
+		pub const fn as_str(&self) -> &str {
+			unsafe { &*(self as *const _ as *const str) }
+		}
+	}
+
+	impl Deref for Str {
+		type Target = str;
+
+		#[inline]
+		fn deref(&self) -> &Self::Target {
+			self.as_str()
+		}
+	}
 
 	/// Creates a formatted error description in const mode.
-	#[inline]
 	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
 		match kind {
 			TransmuteErrKind::InvalidSizeCheck(..) => {
-				"TransmuteErrKind::InvalidSizeCheck(asize != bsize)"
+				Str::new("TransmuteErrKind::InvalidSizeCheck(asize != bsize)")
 			}
-		};
+		}
 	}
 }
 
