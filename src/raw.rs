@@ -18,7 +18,7 @@ union TransmutData<In, Out> {
 	inline
 )]
 #[cfg_attr(feature = "transmute-inline-always", inline(always))]
-pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
+pub const unsafe fn transmute_unchecked<T, To>(in_data: T) -> To {
 	// Add transmutation checks regardless of the selected function,
 	// only works when `debug_assert` is active
 	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
@@ -29,7 +29,7 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 		let size_to = size_of::<To>();
 
 		if size_d != size_to {
-			let errkind = TransmuteErrKind::new_invalid_sizecheck(size_d, size_to);
+			let errkind = TransmuteErrKind::size_mismatch(size_d, size_to);
 
 			errkind.unwrap();
 		}

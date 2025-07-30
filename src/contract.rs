@@ -1,6 +1,6 @@
 //! Data Transformation TransmuteContract.
 
-use crate::mem::unchecked_transmute;
+use crate::mem::transmute_unchecked;
 use core::cmp::Ordering;
 use core::fmt::Debug;
 use core::fmt::Formatter;
@@ -170,7 +170,7 @@ impl<IN, OUT> TransmuteContract<IN, OUT> {
 		let data: &'a IN = self.as_in();
 
 		unsafe {
-			let new_data_ptr: &'a OUT = unchecked_transmute(data);
+			let new_data_ptr: &'a OUT = transmute_unchecked(data);
 
 			new_data_ptr
 		}
@@ -183,7 +183,7 @@ impl<IN, OUT> TransmuteContract<IN, OUT> {
 		let data: &'a mut IN = self.as_mut_in();
 
 		unsafe {
-			let new_data_ptr: &'a mut OUT = unchecked_transmute(data);
+			let new_data_ptr: &'a mut OUT = transmute_unchecked(data);
 
 			new_data_ptr
 		}
@@ -195,7 +195,7 @@ impl<IN, OUT> TransmuteContract<IN, OUT> {
 	pub const fn release_indata(self) -> IN {
 		// To implement permanent movement, follow these steps:
 		let sself: Self = self;
-		let data: IN = unsafe { unchecked_transmute(sself) };
+		let data: IN = unsafe { transmute_unchecked(sself) };
 
 		// This is allowed because we have repr transparent.
 
@@ -209,7 +209,7 @@ impl<IN, OUT> TransmuteContract<IN, OUT> {
 		let data: IN = self.release_indata();
 
 		unsafe {
-			let result: OUT = unchecked_transmute(data);
+			let result: OUT = transmute_unchecked(data);
 			result
 		}
 	}

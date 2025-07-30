@@ -57,7 +57,7 @@ use cluFullTransmute::mem::transmute;
 ## Example
 
 ```rust
-use cluFullTransmute::transmute_or_panic;
+use cluFullTransmute::try_transmute_or_panic;
 use core::fmt::Display;
 
 /*
@@ -100,7 +100,7 @@ fn main() {
 	let a: PanicWhenDrop<u16> = PanicWhenDrop(1024);
 	println!("in a: {:?}", a);
 
-	let b: PrintlnWhenDrop<u16> = unsafe { transmute_or_panic(a as PanicWhenDrop<u16>) };
+	let b: PrintlnWhenDrop<u16> = unsafe { try_transmute_or_panic(a as PanicWhenDrop<u16>) };
 	println!("out b: {:?}", b);
 
 	drop(b); // <--- drop, PrintlnWhenDrop!

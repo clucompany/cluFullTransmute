@@ -27,7 +27,7 @@ transmute-inline = []
 transmute-inline-always = []
 # includes `mem::transmute` api.
 compatible_stdapi = []
-# includes `transmute_or_panic`, `transmute_or_errresult` api.
+# includes `try_transmute_or_panic`, `try_transmute` api.
 support_size_check_transmute = []
 # enables the `std::error::Error` API for errors.
 stderr = []
