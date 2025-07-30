@@ -105,7 +105,7 @@ pub mod mem {
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub mod err;
-pub mod raw;
+mod raw;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "to")))]
 #[cfg(any(test, feature = "to"))]
@@ -118,11 +118,6 @@ pub mod contract;
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 use crate::err::TransmuteErr;
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
-use crate::err::TransmuteErrKind;
-#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-#[cfg(any(test, feature = "transmute-inline"))]
 pub use crate::raw::unchecked_transmute;
 
 /// A constant function reinterprets the bits of a value of one type as another type.
@@ -139,6 +134,8 @@ pub use crate::raw::unchecked_transmute;
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
+	use crate::err::TransmuteErrKind;
+	pub use crate::raw::unchecked_transmute;
 	use core::mem::size_of;
 	{
 		// Data dimension check
@@ -168,6 +165,7 @@ pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {
+	pub use crate::raw::unchecked_transmute;
 	use core::mem::size_of;
 	{
 		// Data dimension check

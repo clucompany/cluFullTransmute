@@ -1,7 +1,7 @@
 //! Data Transformation Contract.
 
 use crate::TransmuteErr;
-use crate::TransmuteErrKind;
+use crate::err::TransmuteErrKind;
 use crate::mem::unchecked_transmute;
 use core::cmp::Ordering;
 use core::fmt::Debug;

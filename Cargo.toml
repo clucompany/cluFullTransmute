@@ -33,11 +33,12 @@ support_size_check_transmute = []
 stderr = []
 # includes `to.rs` api.
 to = []
+# display detailed error information in error description
 error_details = ["cluConstData"]
 
 # Add transmutation checks regardless of the selected function, 
 # only works when `debug_assert` is active
-require_debug_assert_transmute = []
+require_debug_assert_transmute = ["support_size_check_transmute"]
 
 [dependencies]
 cluConstData = {version = "2.1.1", default-features = false, features = ["const_buf"], optional = true}

@@ -2,10 +2,6 @@
 
 use core::mem::ManuallyDrop;
 
-/// Reinterprets the bits of a value of one type as another type.
-/// The function is completely const, data dimensions are not checked.
-pub use unchecked_transmute as transmute;
-
 union TransmutData<In, Out> {
 	r#in: ManuallyDrop<In>,
 	out: ManuallyDrop<Out>,

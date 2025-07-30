@@ -198,7 +198,8 @@ mod error_details {
 mod error_details {
 	use core::ops::Deref;
 
-	use crate::TransmuteErrKind;
+	use crate::err::TransmuteErrKind;
+
 	pub type DescriptionOut = &'static Str;
 
 	/// The most common `&str`, but in a separate type with the `as_str()`

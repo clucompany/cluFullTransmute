@@ -1,6 +1,7 @@
-use cluFullTransmute::unchecked_transmute;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+
+use cluFullTransmute::unchecked_transmute;
 
 #[test]
 fn full_transmute_correct() {
