@@ -6,6 +6,11 @@ use core::mem::ManuallyDrop;
 /// The function is completely const, data dimensions are not checked.
 pub use unchecked_transmute as transmute;
 
+union TransmutData<In, Out> {
+	r#in: ManuallyDrop<In>,
+	out: ManuallyDrop<Out>,
+}
+
 /// Reinterprets the bits of a value of one type as another type.
 /// The function is completely const, data dimensions are not checked.
 ///
@@ -33,14 +38,8 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 			errkind.unwrap();
 		}
 	}
-	union __TransmutData<T, To> {
-		indata: ManuallyDrop<T>,
-		todata: ManuallyDrop<To>,
-	}
-
-	let wait_transmute_data = __TransmutData {
-		indata: ManuallyDrop::new(in_data),
+	let wait_transmute_data = TransmutData {
+		r#in: ManuallyDrop::new(in_data),
 	};
-
-	ManuallyDrop::into_inner(unsafe { wait_transmute_data.todata })
+	ManuallyDrop::into_inner(unsafe { wait_transmute_data.out })
 }
