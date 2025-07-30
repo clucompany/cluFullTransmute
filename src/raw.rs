@@ -1,14 +1,10 @@
 //! Reinterprets the bits of a value of one type as another type without checking.
 
-use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 
 /// Reinterprets the bits of a value of one type as another type.
 /// The function is completely const, data dimensions are not checked.
 pub use unchecked_transmute as transmute;
-
-#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
-use crate::err::TransmuteErrKind;
 
 /// Reinterprets the bits of a value of one type as another type.
 /// The function is completely const, data dimensions are not checked.
@@ -26,6 +22,8 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 	// only works when `debug_assert` is active
 	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
 	{
+		use crate::err::TransmuteErrKind;
+
 		let size_d = size_of::<T>();
 		let size_to = size_of::<To>();
 
@@ -35,13 +33,9 @@ pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 			errkind.unwrap();
 		}
 	}
-
 	union __TransmutData<T, To> {
 		indata: ManuallyDrop<T>,
 		todata: ManuallyDrop<To>,
-
-		#[allow(dead_code)]
-		_shadow_null: PhantomData<*const ()>, // It's necessary?
 	}
 
 	let wait_transmute_data = __TransmutData {

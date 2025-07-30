@@ -201,7 +201,9 @@ mod error_details {
 	#[inline]
 	pub(crate) const fn description(kind: TransmuteErrKind) -> DescriptionOut {
 		match kind {
-			TransmuteErrKind::InvalidSizeCheck(..) => "TransmuteErrKind::InvalidSizeCheck(asize != bsize)",
+			TransmuteErrKind::InvalidSizeCheck(..) => {
+				"TransmuteErrKind::InvalidSizeCheck(asize != bsize)"
+			}
 		};
 	}
 }
