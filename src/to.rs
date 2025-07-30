@@ -15,16 +15,6 @@ where
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn transmute_or_panic<To>(self) -> To;
-	/// A inline constant function reinterprets the bits of a value of one type as another type.
-	///
-	/// # Safety
-	///
-	/// If the sizes do not match, a panic arises.
-	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-	#[cfg(any(test, feature = "transmute-inline"))]
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
-	unsafe fn inline_transmute_or_panic<To>(self) -> To;
 
 	/// A constant function reinterprets the bits of a value of one type as another type.
 	///
@@ -34,16 +24,6 @@ where
 	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>>;
-	/// A inline constant function reinterprets the bits of a value of one type as another type.
-	///
-	/// # Safety
-	///
-	/// If the size does not match, an error occurs.
-	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-	#[cfg(any(test, feature = "transmute-inline"))]
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
-	unsafe fn inline_transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>>;
 
 	/// Reinterprets the bits of a value of one type as another type.
 	/// The function is completely const, data dimensions are not checked.
@@ -76,20 +56,6 @@ where
 		unsafe { crate::transmute_or_panic(self) }
 	}
 
-	/// A inline constant function reinterprets the bits of a value of one type as another type.
-	///
-	/// # Safety
-	///
-	/// If the sizes do not match, a panic arises.
-	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-	#[cfg(any(test, feature = "transmute-inline"))]
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
-	#[inline(always)]
-	unsafe fn inline_transmute_or_panic<To>(self) -> To {
-		unsafe { crate::inline_transmute_or_panic(self) }
-	}
-
 	/// A constant function reinterprets the bits of a value of one type as another type.
 	///
 	/// # Safety
@@ -99,20 +65,6 @@ where
 	#[cfg(any(test, feature = "support_size_check_transmute"))]
 	unsafe fn transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>> {
 		unsafe { crate::transmute_or_errresult(self) }
-	}
-
-	/// A inline constant function reinterprets the bits of a value of one type as another type.
-	///
-	/// # Safety
-	///
-	/// If the size does not match, an error occurs.
-	#[inline(always)]
-	#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-	#[cfg(any(test, feature = "transmute-inline"))]
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
-	unsafe fn inline_transmute_or_errresult<To>(self) -> Result<To, TransmuteErr<Self>> {
-		unsafe { crate::inline_transmute_or_errresult(self) }
 	}
 
 	/// Reinterprets the bits of a value of one type as another type.

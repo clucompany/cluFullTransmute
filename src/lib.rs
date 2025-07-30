@@ -127,7 +127,6 @@ use crate::err::TransmuteErr;
 use crate::err::TransmuteErrKind;
 #[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
 #[cfg(any(test, feature = "transmute-inline"))]
-use crate::raw::inline_unchecked_transmute;
 pub use crate::raw::unchecked_transmute;
 use core::mem::size_of;
 
@@ -137,11 +136,12 @@ use core::mem::size_of;
 ///
 /// If the sizes do not match, a panic arises.
 #[track_caller]
+#[cfg_attr(feature = "transmute-inline", inline)]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
 	{
-		// #1: Data dimension check
+		// Data dimension check
 		let size_d = size_of::<D>();
 		let size_to = size_of::<To>();
 
@@ -155,43 +155,17 @@ pub const unsafe fn transmute_or_panic<D, To>(in_data: D) -> To {
 	unsafe { unchecked_transmute(in_data) }
 }
 
-/// A inline constant function reinterprets the bits of a value of one type as another type.
-///
-/// # Safety
-///
-/// If the sizes do not match, a panic arises.
-#[track_caller]
-#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-#[cfg(any(test, feature = "transmute-inline"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
-#[inline(always)]
-pub const unsafe fn inline_transmute_or_panic<D, To>(in_data: D) -> To {
-	{
-		// #1: Data dimension check
-		let size_d = size_of::<D>();
-		let size_to = size_of::<To>();
-
-		if size_d != size_to {
-			let errkind = TransmuteErrKind::new_invalid_sizecheck(size_d, size_to);
-
-			errkind.unwrap();
-		}
-	}
-
-	unsafe { inline_unchecked_transmute(in_data) }
-}
-
 /// A constant function reinterprets the bits of a value of one type as another type.
 ///
 /// # Safety
 ///
 /// If the size does not match, an error occurs.
+#[cfg_attr(feature = "transmute-inline", inline)]
 #[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
 #[cfg(any(test, feature = "support_size_check_transmute"))]
 pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {
 	{
-		// #1: Data dimension check
+		// Data dimension check
 		let size_d = size_of::<D>();
 		let size_to = size_of::<To>();
 
@@ -203,32 +177,4 @@ pub const unsafe fn transmute_or_errresult<D, To>(in_data: D) -> Result<To, Tran
 	}
 
 	Ok(unsafe { unchecked_transmute(in_data) })
-}
-
-/// A inline constant function reinterprets the bits of a value of one type as another type.
-///
-/// # Safety
-///
-/// If the size does not match, an error occurs.
-#[inline(always)]
-#[cfg_attr(docsrs, doc(cfg(feature = "transmute-inline")))]
-#[cfg(any(test, feature = "transmute-inline"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
-pub const unsafe fn inline_transmute_or_errresult<D, To>(
-	in_data: D,
-) -> Result<To, TransmuteErr<D>> {
-	{
-		// #1: Data dimension check
-		let size_d = size_of::<D>();
-		let size_to = size_of::<To>();
-
-		if size_d != size_to {
-			let err = TransmuteErr::new_invalid_sizecheck(size_d, size_to, in_data);
-
-			return Err(err);
-		}
-	}
-
-	Ok(unsafe { inline_unchecked_transmute(in_data) })
 }
