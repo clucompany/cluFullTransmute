@@ -40,3 +40,4 @@ to = []
 require_debug_assert_transmute = []
 
 [dependencies]
+cluConstData = {version = "2.1.1", no-default-features = true, features = ["const_buf"]}

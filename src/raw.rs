@@ -16,7 +16,10 @@ use crate::err::TransmuteErrKind;
 /// # Safety
 /// No protections.
 #[track_caller]
-#[cfg_attr(all(feature = "transmute-inline", not(feature = "transmute-inline-always")), inline)]
+#[cfg_attr(
+	all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
+	inline
+)]
 #[cfg_attr(feature = "transmute-inline-always", inline(always))]
 pub const unsafe fn unchecked_transmute<T, To>(in_data: T) -> To {
 	// Add transmutation checks regardless of the selected function,
