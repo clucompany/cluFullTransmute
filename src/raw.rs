@@ -29,7 +29,7 @@ pub const unsafe fn transmute_unchecked<T, To>(in_data: T) -> To {
 		let size_to = size_of::<To>();
 
 		if size_d != size_to {
-			let errkind = TransmuteErrKind::size_mismatch(size_d, size_to);
+			let errkind = TransmuteErrKind::size_mismatch_in_debug_assert(size_d, size_to);
 
 			errkind.unwrap();
 		}
