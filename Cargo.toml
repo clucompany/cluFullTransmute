@@ -32,11 +32,11 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = [
-	"contract", 
-	"transmute-inline", 
-	"error_details", 
-	"compatible_stdapi", 
-	"support_size_check_transmute"
+	"contract",
+	"transmute-inline",
+	"error_details",
+	"compatible_stdapi",
+	"support_size_check_transmute",
 ]
 
 # includes `contract.rs` api.

@@ -240,7 +240,7 @@ mod error_details {
 	/// Creates a formatted error description in const mode.
 	pub(crate) const fn as_description(kind: TransmuteErrKind) -> DescriptionOut {
 		match kind {
-			TransmuteErrKind::SizeMismatch(..) => {
+			TransmuteErrKind::SizeMismatch { .. } => {
 				Str::new("TransmuteErrKind::SizeMismatch(asize != bsize)")
 			}
 		}
