@@ -46,7 +46,7 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-cluFullTransmute = "1.4.0"
+cluFullTransmute = "1.4.1"
 ```
 
 and this to your source code:
