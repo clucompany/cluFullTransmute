@@ -65,8 +65,8 @@ pub mod mem {
 	pub use crate::try_transmute_or_panic as transmute;
 }
 
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+#[cfg(any(test, feature = "try_transmute"))]
 pub mod err;
 mod raw;
 
@@ -78,8 +78,8 @@ pub mod to;
 #[cfg(any(test, feature = "contract"))]
 pub mod contract;
 
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+#[cfg(any(test, feature = "try_transmute"))]
 use crate::err::TransmuteErr;
 pub use crate::raw::transmute_unchecked;
 
@@ -94,8 +94,8 @@ pub use crate::raw::transmute_unchecked;
 	inline
 )]
 #[cfg_attr(feature = "transmute-inline-always", inline(always))]
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+#[cfg(any(test, feature = "try_transmute"))]
 pub const unsafe fn try_transmute_or_panic<D, To>(in_data: D) -> To {
 	use crate::err::TransmuteErrKind;
 	pub use crate::raw::transmute_unchecked;
@@ -125,8 +125,8 @@ pub const unsafe fn try_transmute_or_panic<D, To>(in_data: D) -> To {
 	inline
 )]
 #[cfg_attr(feature = "transmute-inline-always", inline(always))]
-#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-#[cfg(any(test, feature = "support_size_check_transmute"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+#[cfg(any(test, feature = "try_transmute"))]
 pub const unsafe fn try_transmute<D, To>(in_data: D) -> Result<To, TransmuteErr<D>> {
 	pub use crate::raw::transmute_unchecked;
 	use core::mem::size_of;

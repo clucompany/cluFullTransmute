@@ -282,11 +282,11 @@ mod error_details {
 		match kind {
 			TransmuteErrKind::SizeMismatch { .. } => {
 				Str::new("TransmuteErrKind::SizeMismatch(asize != bsize)")
-			}
+			},
 			#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
-			TransmuteErrKind::SizeMismatch { .. } => {
+			TransmuteErrKind::SizeMismatchInDebugAssert { .. } => {
 				Str::new("TransmuteErrKind::SizeMismatchInDebugAssert(asize != bsize)")
-			}
+			},
 		}
 	}
 }
