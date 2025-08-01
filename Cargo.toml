@@ -37,7 +37,7 @@ default = [
 	"error_details",
 	"compatible_stdapi",
 	"support_size_check_transmute",
-	"require_debug_assert_transmute"
+	"assert_transmute_mode"
 ]
 
 # includes `contract.rs` api.
@@ -55,7 +55,7 @@ support_size_check_transmute = []
 
 # Add transmutation checks regardless of the selected function, 
 # only works when `debug_assert` is active
-require_debug_assert_transmute = ["support_size_check_transmute"]
+assert_transmute_mode = ["support_size_check_transmute"]
 
 # includes `to.rs` api.
 to = []

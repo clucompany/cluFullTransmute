@@ -21,7 +21,7 @@ union TransmutData<In, Out> {
 pub const unsafe fn transmute_unchecked<T, To>(in_data: T) -> To {
 	// Add transmutation checks regardless of the selected function,
 	// only works when `debug_assert` is active
-	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+	#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 	{
 		use crate::err::TransmuteErrKind;
 

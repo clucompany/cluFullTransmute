@@ -26,7 +26,7 @@ pub enum TransmuteErrKind {
 
 	/// Mismatch in input/output type sizes (e.g. `size_of::<A>() != size_of::<B>()`)
 	/// in debug_assertions.
-	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+	#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 	SizeMismatchInDebugAssert { atype: usize, btype: usize },
 }
 
@@ -40,7 +40,7 @@ impl TransmuteErrKind {
 
 	/// An error occurred while comparing the sizes of input and output types
 	/// (sizeA is not equal to sizeB).
-	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+	#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 	#[inline]
 	pub const fn size_mismatch_in_debug_assert(atype: usize, btype: usize) -> Self {
 		Self::SizeMismatchInDebugAssert { atype, btype }
@@ -50,13 +50,13 @@ impl TransmuteErrKind {
 	/// of data dimensions at the input and output.
 	#[inline]
 	pub const fn is_size_mismatch(&self) -> bool {
-		#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+		#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 		return matches!(
 			self,
 			Self::SizeMismatch { .. } | Self::SizeMismatchInDebugAssert { .. }
 		);
 
-		#[cfg(not(all(feature = "require_debug_assert_transmute", debug_assertions)))]
+		#[cfg(not(all(feature = "assert_transmute_mode", debug_assertions)))]
 		matches!(self, Self::SizeMismatch { .. })
 	}
 
@@ -171,7 +171,7 @@ mod stderr {
 				TransmuteErrKind::SizeMismatch { .. } => {
 					"TransmuteErrKind::SizeMismatch(atype != bsize)"
 				}
-				#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+				#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 				TransmuteErrKind::SizeMismatchInDebugAssert { .. } => {
 					"TransmuteErrKind::SizeMismatch(atype != bsize)"
 				}
@@ -198,22 +198,22 @@ mod error_details {
 				+ DESCRIPTION_S1.len() // str
 				+ usize::MAX_DECIMAL_LEN // usize
 				+ DESCRIPTION_S2.len() + { // str
-					#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+					#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 					{DESCRIPTION_S3.len()}
-					#[cfg(not(all(feature = "require_debug_assert_transmute", debug_assertions)))]
+					#[cfg(not(all(feature = "assert_transmute_mode", debug_assertions)))]
 					0
 				};
 	const DESCRIPTION_S0: &str = "Invalid transmute: attempted to reinterpret type A (";
 	const DESCRIPTION_S1: &str = " bytes) as incompatible type B (";
 	const DESCRIPTION_S2: &str = " bytes). Sizes must match exactly.";
 
-	#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
-	const DESCRIPTION_S3: &str = "This check was added additionally due to the inclusion of `debug_assertions` and the `require_debug_assert_transmute` function in `cluFullTransmute`.";
+	#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
+	const DESCRIPTION_S3: &str = "This check was added additionally due to the inclusion of `debug_assertions` and the `assert_transmute_mode` function in `cluFullTransmute`.";
 	/// Creates a formatted error description in const mode.
 	pub(crate) const fn as_description(kind: TransmuteErrKind) -> DescriptionOut {
 		let (a_size, b_size, adebug_assert) = match kind {
 			TransmuteErrKind::SizeMismatch { atype, btype } => (atype, btype, false),
-			#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+			#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 			TransmuteErrKind::SizeMismatchInDebugAssert { atype, btype } => (atype, btype, true),
 		};
 
@@ -229,7 +229,7 @@ mod error_details {
 		buf.push_str(DESCRIPTION_S2);
 
 		if adebug_assert {
-			#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+			#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 			buf.push_str(DESCRIPTION_S3);
 			let _e = adebug_assert;
 		}
@@ -283,7 +283,7 @@ mod error_details {
 			TransmuteErrKind::SizeMismatch { .. } => {
 				Str::new("TransmuteErrKind::SizeMismatch(asize != bsize)")
 			}
-			#[cfg(all(feature = "require_debug_assert_transmute", debug_assertions))]
+			#[cfg(all(feature = "assert_transmute_mode", debug_assertions))]
 			TransmuteErrKind::SizeMismatch { .. } => {
 				Str::new("TransmuteErrKind::SizeMismatchInDebugAssert(asize != bsize)")
 			}
