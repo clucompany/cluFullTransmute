@@ -12,8 +12,8 @@ where
 	/// # Safety
 	///
 	/// If the sizes do not match, a panic arises.
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+	#[cfg(any(test, feature = "try_transmute"))]
 	unsafe fn try_transmute_or_panic<To>(self) -> To;
 
 	/// A constant function reinterprets the bits of a value of one type as another type.
@@ -21,8 +21,8 @@ where
 	/// # Safety
 	///
 	/// If the size does not match, an error occurs.
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+	#[cfg(any(test, feature = "try_transmute"))]
 	unsafe fn try_transmute<To>(self) -> Result<To, TransmuteErr<Self>>;
 
 	/// Reinterprets the bits of a value of one type as another type.
@@ -42,8 +42,8 @@ where
 	/// # Safety
 	///
 	/// If the sizes do not match, a panic arises.
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+	#[cfg(any(test, feature = "try_transmute"))]
 	#[cfg_attr(
 		all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
 		inline
@@ -58,8 +58,8 @@ where
 	/// # Safety
 	///
 	/// If the size does not match, an error occurs.
-	#[cfg_attr(docsrs, doc(cfg(feature = "support_size_check_transmute")))]
-	#[cfg(any(test, feature = "support_size_check_transmute"))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "try_transmute")))]
+	#[cfg(any(test, feature = "try_transmute"))]
 	#[cfg_attr(
 		all(feature = "transmute-inline", not(feature = "transmute-inline-always")),
 		inline
