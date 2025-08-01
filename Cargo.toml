@@ -37,6 +37,7 @@ default = [
 	"error_details",
 	"compatible_stdapi",
 	"support_size_check_transmute",
+	"require_debug_assert_transmute"
 ]
 
 # includes `contract.rs` api.
