@@ -91,15 +91,7 @@ where
 	}
 }
 
-impl<IN, OUT> Eq for TransmuteContract<IN, OUT>
-where
-	IN: Eq,
-{
-	#[inline]
-	fn assert_receiver_is_total_eq(&self) {
-		Eq::assert_receiver_is_total_eq(&self.data as &IN)
-	}
-}
+impl<IN, OUT> Eq for TransmuteContract<IN, OUT> where IN: Eq {}
 
 impl<IN, OUT> Ord for TransmuteContract<IN, OUT>
 where
