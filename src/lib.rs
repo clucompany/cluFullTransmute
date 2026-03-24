@@ -1,4 +1,4 @@
-//Copyright 2019-2025 #UlinProject Denis Kotlyarov (Денис Котляров)
+//Copyright 2019-2026 #UlinProject Denis Kotlyarov (Денис Котляров)
 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #Ulin Project 2019-2025
+// #Ulin Project 2019-2026
 /*!
 
 Extended, no-constraint type transmutation API, featuring safe checks and const-ready logic.
