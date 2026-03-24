@@ -91,15 +91,7 @@ where
 	}
 }
 
-impl<IN, OUT> Eq for TransmuteContract<IN, OUT>
-where
-	IN: Eq,
-{
-	#[inline]
-	fn assert_receiver_is_total_eq(&self) {
-		Eq::assert_receiver_is_total_eq(&self.data as &IN)
-	}
-}
+impl<IN, OUT> Eq for TransmuteContract<IN, OUT> where IN: Eq {}
 
 impl<IN, OUT> Ord for TransmuteContract<IN, OUT>
 where
@@ -127,10 +119,10 @@ where
 impl<IN, OUT> TransmuteContract<IN, OUT> {
 	/// Checking contract sizes at compile time
 	const TYPE_SIZE_MATCH_ASSERT: () = [()][
-			// If you read this in the error logs, then you have violated one of the terms of the
-			// agreement: full match of the dimensions of the input and output types.
-			(size_of::<IN>() != size_of::<OUT>()) as usize
-		];
+		// If you read this in the error logs, then you have violated one of the terms of the
+		// agreement: full match of the dimensions of the input and output types.
+		(size_of::<IN>() != size_of::<OUT>()) as usize
+	];
 
 	/// Create a contract without checks.
 	///
